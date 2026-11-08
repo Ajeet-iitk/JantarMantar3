@@ -1,0 +1,2516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0a0c10">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Chalo Jantar Mantar — March Runner</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box}
+  html,body{margin:0;height:100%;height:100dvh;overflow:hidden;background:#0a0c10;color:#eef2f6;
+    font-family:'Segoe UI',system-ui,Arial,sans-serif;-webkit-user-select:none;user-select:none;
+    touch-action:none;overscroll-behavior:none;-webkit-tap-highlight-color:transparent;
+    -webkit-text-size-adjust:100%}
+  #game{position:fixed;inset:0;display:block;touch-action:none}
+  .overlay{position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(ellipse at 50% 40%,rgba(12,16,22,.72),rgba(6,8,11,.93));
+    backdrop-filter:blur(3px);
+    padding:calc(10px + env(safe-area-inset-top)) 10px calc(10px + env(safe-area-inset-bottom));
+    box-sizing:border-box;-webkit-overflow-scrolling:touch}
+  [hidden]{display:none!important}
+  .panel{width:min(760px,100%);max-height:100%;overflow:auto;-webkit-overflow-scrolling:touch;
+    padding:24px 28px 26px;border-radius:14px;
+    background:linear-gradient(165deg,#171b22,#0d1015);border:1px solid #2b323d;
+    border-top:5px solid #ff9933;box-shadow:0 26px 90px rgba(0,0,0,.75);text-align:center}
+  h1{margin:0;font-size:clamp(30px,6vw,54px);font-weight:900;letter-spacing:3px;line-height:1.02;
+    background:linear-gradient(90deg,#ff9933 0%,#ffffff 50%,#1a9e2f 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 0 34px rgba(255,153,51,.18)}
+  h1 small{display:block;font-size:.30em;letter-spacing:8px;font-weight:700;margin-top:10px;
+    background:none;-webkit-text-fill-color:#9aa5b1;color:#9aa5b1}
+  .sub{color:#9aa5b1;font-size:13px;letter-spacing:1.6px;text-transform:uppercase;margin:14px 0 18px}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:10px 22px;text-align:left;margin:0 auto}
+  @media(max-width:620px){.cols{grid-template-columns:1fr}}
+  .ctl{display:flex;align-items:center;gap:10px;font-size:13.5px;color:#c6cfd9;min-height:30px}
+  .ctl b{flex:0 0 auto;background:#1d222a;border:1px solid #3a434f;border-bottom-width:2px;border-radius:6px;
+    padding:3px 9px;font-size:11.5px;letter-spacing:.6px;color:#f2f6fa;font-weight:700}
+  .ctl span{opacity:.9}
+  .go{margin-top:22px;width:100%;padding:14px;font-size:19px;font-weight:900;letter-spacing:3px;
+    background:linear-gradient(180deg,#ffa94d,#ef8a1f);color:#241400;border:none;border-radius:9px;cursor:pointer}
+  .go:hover{filter:brightness(1.08)}
+  .ghost{margin-top:10px;width:100%;padding:11px;font-size:13px;font-weight:700;letter-spacing:2px;
+    background:#1a1f27;color:#c9d2dc;border:1px solid #333c48;border-radius:9px;cursor:pointer}
+  .ghost:hover{border-color:#ff9933;color:#fff}
+  .keys{margin-top:14px;font-size:11.5px;color:#7d8794;line-height:1.9}
+  .keys kbd{background:#1b2027;border:1px solid #39414c;border-radius:4px;padding:1px 6px;color:#dde4ea;font-size:11px}
+  table{width:100%;border-collapse:collapse;margin:6px 0 2px;font-size:14px}
+  td,th{padding:7px 8px;text-align:left;border-bottom:1px solid #232a33}
+  td:last-child,th:last-child{text-align:right}
+  th{color:#7d8794;font-size:10.5px;letter-spacing:2px;text-transform:uppercase}
+  .big{font-size:clamp(26px,5vw,44px);font-weight:900;letter-spacing:4px;margin:0}
+  .win{color:#5ddc76}.lose{color:#ff6a5a}
+  .note{margin-top:16px;font-size:11px;color:#69727e;line-height:1.7;border-top:1px solid #222831;padding-top:12px}
+  .stat{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin:6px 0 4px}
+  .stat div{background:#141920;border:1px solid #262e38;border-radius:9px;padding:9px 16px;min-width:96px}
+  .stat b{display:block;font-size:21px;color:#fff}
+  .stat i{font-style:normal;font-size:10px;letter-spacing:2px;color:#7d8794;text-transform:uppercase}
+  #touch{position:fixed;left:0;right:0;bottom:0;z-index:8;display:flex;justify-content:space-between;
+    align-items:flex-end;padding:10px 12px calc(10px + env(safe-area-inset-bottom));pointer-events:none}
+  #touch button{pointer-events:auto;flex:0 0 38%;max-width:230px;min-height:clamp(52px,9vh,76px);
+    padding:12px 0;font-size:15px;font-weight:900;letter-spacing:2px;border-radius:14px;
+    border:1px solid rgba(255,255,255,.22);background:rgba(20,25,32,.5);color:rgba(234,240,246,.9);
+    touch-action:none;user-select:none}
+  #touch button:active,#touch button.on{background:rgba(255,153,51,.5);border-color:rgba(255,183,102,.8)}
+  .topbtns{position:fixed;z-index:9;display:flex;gap:8px;
+    top:calc(8px + env(safe-area-inset-top));right:calc(8px + env(safe-area-inset-right))}
+  .topbtns button{width:40px;height:40px;border-radius:50%;background:rgba(20,25,32,.6);
+    border:1px solid rgba(255,255,255,.18);color:#dfe6ee;font-size:15px;line-height:1;cursor:pointer;
+    touch-action:none;-webkit-tap-highlight-color:transparent}
+  .topbtns button:active{background:rgba(255,153,51,.45)}
+  @media(max-height:470px){ .panel{padding:12px 14px 14px} h1{font-size:clamp(20px,4.4vw,30px);letter-spacing:2px}
+    h1 small{letter-spacing:5px;margin-top:6px}
+    .sub{margin:6px 0 8px;font-size:11px} .cols{gap:2px 16px} .ctl{font-size:11.5px;min-height:20px}
+    .ctl b{padding:2px 6px;font-size:10.5px}
+    .go{margin-top:10px;padding:10px;font-size:16px} .ghost{margin-top:6px;padding:8px}
+    .keys,.note{font-size:10px;line-height:1.45;margin-top:8px;padding-top:8px}
+    .stat div{padding:5px 10px;min-width:76px} .stat b{font-size:16px} table{font-size:12px}
+    td,th{padding:4px 6px}
+    #touch button{min-height:52px;padding:8px 0;font-size:13px} }
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div class="topbtns">
+  <button id="btnPause" title="Pause (P)">&#10074;&#10074;</button>
+  <button id="btnMute" title="Mute (M)">&#128266;</button>
+</div>
+
+<!-- ================= TITLE ================= -->
+<div class="overlay" id="ovTitle">
+  <div class="panel">
+    <h1>CHALO<br>JANTAR MANTAR<small>A MARCH RUNNER</small></h1>
+    <div class="sub">Barricades. Potholes. Tear gas. Police. Reach the protest site.</div>
+    <div class="cols">
+      <div class="ctl"><b>SPACE</b><b>&uarr;</b><b>W</b><span>Jump — barricades, potholes, officers</span></div>
+      <div class="ctl"><b>&darr;</b><b>S</b><span>Slide — duck under tear gas clouds</span></div>
+      <div class="ctl"><b>P</b><span>Pause &nbsp;·&nbsp; <b style="padding:1px 6px">R</b> restart</span></div>
+      <div class="ctl"><b>M</b><span>Mute</span></div>
+      <div class="ctl"><b>TAP</b><span>On a phone: tap the right half to jump, hold the left half to slide</span></div>
+    </div>
+    <button class="go" id="btnPlay">START THE MARCH</button>
+    <div class="keys">Every obstacle costs you a flag — barricades, potholes, tear gas, officers. You get
+      <b style="color:#ff9933">3 flags</b>; at zero the march ends. A water bottle restores one flag.<br>
+      <b style="color:#5ddc76">Collect fellow protestors</b> — every one who joins your crowd stacks your score,
+      and a clean streak multiplies it. Get as many to Jantar Mantar as you can.<br>
+      Police lock-ups throw you onto <b>a different Delhi street</b>; the march carries on from where it stopped.</div>
+    <div class="note" id="titleBest"></div>
+    <div class="note">A fictional arcade game, made for fun. Not affiliated with, endorsed by, or representing
+      any organisation, political party or police force. Any resemblance to real events is coincidental.</div>
+  </div>
+</div>
+
+<!-- ================= PAUSE ================= -->
+<div class="overlay" id="ovPause" hidden>
+  <div class="panel">
+    <p class="big">PAUSED</p>
+    <div class="sub">The march is waiting.</div>
+    <button class="go" id="btnResume">RESUME</button>
+    <button class="ghost" id="btnQuit">GIVE UP &amp; RESTART</button>
+  </div>
+</div>
+
+<!-- ================= WIN ================= -->
+<div class="overlay" id="ovWin" hidden>
+  <div class="panel">
+    <p class="big win">JANTAR MANTAR</p>
+    <div class="sub">You made it. The placards go up.</div>
+    <div class="stat" id="winStats"></div>
+    <button class="go" id="btnWinAgain">MARCH AGAIN</button>
+  </div>
+</div>
+
+<!-- ================= LOSE ================= -->
+<div class="overlay" id="ovLose" hidden>
+  <div class="panel">
+    <p class="big lose">MARCH ENDED</p>
+    <div class="sub">No flags left — the police take you, and the march goes on without you.</div>
+    <div class="stat" id="loseStats"></div>
+    <button class="go" id="btnRetry">TRY AGAIN</button>
+  </div>
+</div>
+
+<div id="touch" hidden>
+  <button id="btnSlide">SLIDE</button>
+  <button id="btnJump">JUMP</button>
+</div>
+
+<script>
+(() => {
+'use strict';
+
+/* ==================================================================
+   CHALO JANTAR MANTAR — a side-scrolling march runner
+   Jump barricades / potholes / officers, slide under tear gas,
+   don't get detained, reach the protest site.
+   ================================================================== */
+
+// ------------------------- tunables -------------------------------
+const DESIGN_H  = 720;        // design-space height
+const GROUND_Y  = 604;        // y of the road surface (feet level)
+const GOAL_X    = 30000;      // world distance of the finish line
+const MAX_LIVES = 3;          // flags; every obstacle costs one
+const HIT_INVULN = 1.55;      // grace window after a hit (one obstacle = one flag)
+const GRAV      = 2650;
+const GRAV_HOLD = 2200;       // softer gravity while rising + holding jump
+const GRAV_SINK = 3600;       // sliding drops faster
+const JUMP_V    = -820;
+const JUMP_CUT  = -620;       // released early: still enough to clear a barricade
+const COYOTE    = 0.10;
+const JUMP_BUF  = 0.13;
+const METRES_PER_UNIT = 0.66; // 30000 units ~= 20 km, Jamia to Jantar Mantar
+
+const RESCUE_BASE  = 80;      // score for one protestor picked up
+const CROWD_BONUS  = 150;     // score per protestor still with you at the end
+const STREAK_STEP  = 0.10;    // +10% per clean pickup
+const STREAK_CAP   = 10;      // ...up to +100%
+
+const LANDMARKS = [
+  { p: 0.00, n: 'Start'      },
+  { p: 0.28, n: 'ITO'        },
+  { p: 0.55, n: 'Barakhamba' },
+  { p: 0.80, n: 'Tolstoy'    },
+  { p: 1.00, n: 'Jantar Mantar' },
+];
+
+const BEST_KEY = 'cjm_best_v1';
+
+// ------------------------- routes ---------------------------------
+// Every route is a different Delhi street the march can be pushed onto.
+// Getting detained drops you onto another one, with its own skyline,
+// its own palette and its own mix of obstacles.
+const ROUTES = [
+  { name:'JAMIA — OKHLA', short:'JAMIA', scene:'okhla',
+    sky:['#4a6b86','#8aa6bb','#c6d2d9'], road:'#3b4149', roadFar:'#22262c',
+    weights:{ barricade:5, pothole:3, police:3, gasAir:2, gasGround:1,
+              barricade2:2, pothole2:1, combo:1, rescue:7, aid:2 } },
+  { name:'RING ROAD — ASHRAM', short:'RING ROAD', scene:'ring',
+    sky:['#48607a','#8496a8','#c2c8cd'], road:'#3a3e46', roadFar:'#1f2228',
+    weights:{ barricade:4, pothole:6, police:4, gasAir:3, gasGround:2,
+              barricade2:3, pothole2:3, combo:2, rescue:6, aid:2 } },
+  { name:'ITO — DARYAGANJ', short:'ITO', scene:'ito',
+    sky:['#5a6478','#9d8f7e','#d3bfa2'], road:'#3d3a3c', roadFar:'#211f21',
+    weights:{ barricade:5, pothole:4, police:6, gasAir:4, gasGround:3,
+              barricade2:3, pothole2:2, combo:3, rescue:6, aid:2 } },
+  { name:'CONNAUGHT PLACE', short:'C.P.', scene:'cp',
+    sky:['#44618a','#8199b8','#c4d1de'], road:'#3c4149', roadFar:'#22262c',
+    weights:{ barricade:5, pothole:3, police:5, gasAir:6, gasGround:4,
+              barricade2:3, pothole2:2, combo:4, rescue:6, aid:2 } },
+  { name:'TOLSTOY MARG', short:'TOLSTOY MARG', scene:'goal',
+    sky:['#4d6480','#8ba1b3','#cbd6db'], road:'#3b4149', roadFar:'#22262c',
+    weights:{ barricade:4, pothole:3, police:5, gasAir:4, gasGround:3,
+              barricade2:3, pothole2:2, combo:4, rescue:7, aid:2 } },
+];
+let routeIndex = 0;
+let routeDetour = 0;          // shifts the street you're on (police drop you elsewhere)
+const route = () => ROUTES[routeIndex];
+// The march walks through the streets of Delhi as it advances: every fifth
+// of the route is the next street. A detention throws a "detour" on top, so
+// you carry on down a *different* street than the one you were caught on.
+function sectionIndex(){
+  return clamp(Math.floor(player.x / GOAL_X * ROUTES.length), 0, ROUTES.length-1);
+}
+function routeWanted(){ return (sectionIndex() + routeDetour) % ROUTES.length; }
+
+// ------------------------- helpers --------------------------------
+const clamp = (v,a,b) => v < a ? a : v > b ? b : v;
+const lerp  = (a,b,t) => a + (b-a)*t;
+const rand  = (a,b)   => a + Math.random()*(b-a);
+const randInt = (a,b) => Math.floor(rand(a, b+1));
+const pick  = arr => arr[randInt(0, arr.length-1)];
+function hash(n){ const s = Math.sin(n*127.1 + 311.7) * 43758.5453; return s - Math.floor(s); }
+
+const cv  = document.getElementById('game');
+const ctx = cv.getContext('2d', { alpha: false });
+let VW = 1280, VH = 720, SCALE = 1, OFFY = 0, TOPY = 0;   // screen metrics
+let CW = 1280, CH = 720;                                  // viewport, CSS pixels
+const MIN_VIEW_W = 520;                                   // street kept visible ahead
+
+function resize(){
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const w = Math.max(1, window.innerWidth), h = Math.max(1, window.innerHeight);
+  CW = w; CH = h;
+  cv.width  = Math.round(w*dpr);
+  cv.height = Math.round(h*dpr);
+  cv.style.width  = w+'px';
+  cv.style.height = h+'px';
+  ctx.__dpr = dpr;
+  // Fit the game band to the screen, but never squeeze the street narrower than
+  // MIN_VIEW_W: on a tall phone we keep the width and let the sky grow above.
+  // A touch device also gets a strip of road at the bottom for the buttons.
+  const touchRoom = touchUI ? clamp(h*0.15, 56, 108) : 0;
+  const hudRoom = Math.min(150, Math.max(52, h*0.15));
+  SCALE = clamp(Math.min((h - touchRoom - hudRoom*0.35)/690, w/MIN_VIEW_W), 0.42, 1.75);
+  VH = DESIGN_H + touchRoom/SCALE;    // the road runs to the bottom of the screen
+  OFFY  = h - VH*SCALE;
+  TOPY  = -OFFY/SCALE;                // design-y of the top screen edge
+  VW = w/SCALE;                       // visible design width
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.scale(dpr, dpr);
+}
+window.addEventListener('resize', resize);
+window.addEventListener('orientationchange', () => setTimeout(resize, 60));
+if (window.visualViewport) window.visualViewport.addEventListener('resize', () => setTimeout(resize, 60));
+
+// Rounded rect path helper
+function rr(x,y,w,h,r){
+  const k = Math.max(0, Math.min(r, Math.abs(w)/2, Math.abs(h)/2));
+  ctx.beginPath();
+  ctx.moveTo(x+k,y);
+  ctx.lineTo(x+w-k,y);  ctx.quadraticCurveTo(x+w,y,x+w,y+k);
+  ctx.lineTo(x+w,y+h-k);ctx.quadraticCurveTo(x+w,y+h,x+w-k,y+h);
+  ctx.lineTo(x+k,y+h);  ctx.quadraticCurveTo(x,y+h,x,y+h-k);
+  ctx.lineTo(x,y+k);    ctx.quadraticCurveTo(x,y,x+k,y);
+  ctx.closePath();
+}
+function circle(x,y,r){ ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.closePath(); }
+
+// ------------------------- audio ----------------------------------
+// Everything is synthesised - no external files. One shared AudioContext
+// feeds the sound effects and the procedural dhol-driven march music.
+const Sound = (() => {
+  let AC = null;
+  let master = null, sfxBus = null, musBus = null, musFilter = null;
+  let muted = false, musicOn = false;
+  let crowdSrc = null, crowdGain = null;
+  try { muted = localStorage.getItem('cjm_mute') === '1'; } catch(e){}
+
+  function ac(){
+    if (!AC){
+      try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){ AC = null; }
+      if (AC){
+        master = AC.createGain();
+        master.gain.value = muted ? 0 : .85;
+        master.connect(AC.destination);
+        sfxBus = AC.createGain(); sfxBus.gain.value = .85; sfxBus.connect(master);
+        musFilter = AC.createBiquadFilter();
+        musFilter.type = 'lowpass'; musFilter.frequency.value = 20000; musFilter.Q.value = .7;
+        musBus = AC.createGain(); musBus.gain.value = .32;
+        musBus.connect(musFilter); musFilter.connect(master);
+      }
+    }
+    if (AC && AC.state === 'suspended') AC.resume();
+    return AC;
+  }
+  const now = () => (AC ? AC.currentTime : 0);
+  const at  = () => now() + .002;
+
+  // ---- primitives -------------------------------------------------
+  function osc(when, freq, dur, type, vol, dest, glideTo){
+    if (!AC) return null;
+    const t = Math.max(when, now() + .001);
+    const o = AC.createOscillator(), g = AC.createGain();
+    o.type = type || 'square';
+    o.frequency.setValueAtTime(freq, t);
+    if (glideTo) o.frequency.exponentialRampToValueAtTime(Math.max(20, glideTo), t + dur);
+    g.gain.setValueAtTime(.0001, t);
+    g.gain.exponentialRampToValueAtTime(Math.max(.0002, vol), t + Math.min(.012, dur*.3));
+    g.gain.exponentialRampToValueAtTime(.0004, t + dur);
+    o.connect(g).connect(dest || sfxBus);
+    o.start(t); o.stop(t + dur + .03);
+    return o;
+  }
+
+  let noiseBuf = null;
+  function noiseBufGet(){
+    if (!AC) return null;
+    if (!noiseBuf){
+      const n = Math.floor(AC.sampleRate * 1.4);
+      noiseBuf = AC.createBuffer(1, n, AC.sampleRate);
+      const d = noiseBuf.getChannelData(0);
+      for (let i=0;i<n;i++) d[i] = Math.random()*2 - 1;
+    }
+    return noiseBuf;
+  }
+  function noise(when, dur, vol, type, freq, q, dest){
+    if (!AC) return;
+    const t = Math.max(when, now() + .001);
+    const src = AC.createBufferSource(); src.buffer = noiseBufGet();
+    const f = AC.createBiquadFilter();
+    f.type = type || 'lowpass'; f.frequency.value = freq || 1200; f.Q.value = q || 1;
+    const g = AC.createGain();
+    g.gain.setValueAtTime(.0001, t);
+    g.gain.exponentialRampToValueAtTime(Math.max(.0002, vol), t + .009);
+    g.gain.exponentialRampToValueAtTime(.0004, t + dur);
+    src.connect(f).connect(g).connect(dest || sfxBus);
+    src.start(t); src.stop(t + dur + .02);
+  }
+
+  // ---- instruments (music bus) ------------------------------------
+  const NOTE = semi => 146.832 * Math.pow(2, semi/12);   // D3 root
+  const drum  = (t,v) => { osc(t, 132, .24, 'sine', .55*v, musBus, 46);
+                           noise(t, .05, .10*v, 'lowpass', 520, 1, musBus); };
+  const hand  = (t,v) => { noise(t, .05, .17*v, 'bandpass', 1500, 1.3, musBus);
+                           noise(t+.022, .06, .11*v, 'bandpass', 2100, 1.1, musBus); };
+  const tak   = (t,v) => { noise(t, .03, .12*v, 'highpass', 4200, 1, musBus);
+                           osc(t, 330, .05, 'triangle', .07*v, musBus, 250); };
+  const bass  = (t,semi,dur,v) => { osc(t, NOTE(semi)/2, dur, 'triangle', .26*v, musBus);
+                                    osc(t, NOTE(semi)/4, dur, 'sine', .16*v, musBus); };
+  const pluck = (t,semi,dur,v) => { osc(t, NOTE(semi), dur, 'triangle', .15*v, musBus);
+                                    osc(t, NOTE(semi)*2.01, dur*.5, 'sine', .05*v, musBus); };
+  const crowdSwell = (t) => { noise(t, 1.5, .07, 'bandpass', 780, .6, musBus); };
+
+  // ---- sequencer --------------------------------------------------
+  const SCALE = [0,3,5,7,10,12,15,17];
+  const MEL = [ 0,-1,-1,-1, 1,-1,-1,-1, 2,-1,-1,-1, 3,-1,-1,-1,
+                4,-1, 3,-1, 2,-1, 1,-1, 0,-1,-1,-1,-1,-1,-1,-1 ];
+  const BASS_STEPS = { 0:0, 8:10, 16:0, 24:5 };
+  const KICK = [0,6,8,14], CLAP = [4,12], TAK = [2,3,7,10,11,15];
+  let step = 0, nextT = 0, bpm = 90, intensity = 0;
+
+  function stepDur(){ return 60 / bpm / 4; }
+
+  function scheduleStep(s, t){
+    const p = s % 16, loop = Math.floor(s/16) % 4;
+    const v = .78 + intensity*.34;
+    if (KICK.indexOf(p) >= 0) drum(t, v * (p === 0 ? 1.15 : .9));
+    if (intensity > .55 && p === 10) drum(t, v*.6);
+    if (CLAP.indexOf(p) >= 0) hand(t, v*.8);
+    if (TAK.indexOf(p) >= 0) tak(t, v*.7);
+    if (intensity > .5 && loop === 3 && p >= 13) tak(t, v*.5);      // end-of-phrase fill
+    const bs = BASS_STEPS[s % 32];
+    if (bs !== undefined) bass(t, bs, stepDur()*7, .9);
+    const m = MEL[s % 32];
+    if (m >= 0) pluck(t, SCALE[m], stepDur()*(loop % 2 ? 3 : 2), .9);
+    if (s % 64 === 0 && s > 0){                                     // phrase boundary: crowd + whistle
+      crowdSwell(t);
+      if (Math.random() < .55){ osc(t, 2380, .22, 'square', .035, musBus, 2750); }
+    }
+  }
+
+  function startCrowdBed(){
+    if (!AC || crowdSrc) return;
+    crowdSrc = AC.createBufferSource();
+    crowdSrc.buffer = noiseBufGet(); crowdSrc.loop = true;
+    const f = AC.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 700; f.Q.value = .7;
+    crowdGain = AC.createGain(); crowdGain.gain.value = .045;
+    const lfo = AC.createOscillator(), lg = AC.createGain();
+    lfo.frequency.value = .12; lg.gain.value = .028;
+    lfo.connect(lg).connect(crowdGain.gain);
+    crowdSrc.connect(f).connect(crowdGain).connect(musBus);
+    crowdSrc.start(); lfo.start();
+  }
+
+  const music = {
+    start(){ const a = ac(); if (!a) return; musicOn = true; step = 0; nextT = a.currentTime + .1; startCrowdBed(); },
+    stop(){ musicOn = false; if (crowdSrc){ try { crowdSrc.stop(); } catch(e){} crowdSrc = null; crowdGain = null; } },
+    tick(){ if (!musicOn || !AC) return; const t = now();
+            if (nextT < t - .3) nextT = t + .05;
+            while (nextT < t + .2){ scheduleStep(step, nextT); step++; nextT += stepDur(); } },
+    progress(p){ intensity = p; bpm = 88 + 24*p; },
+    duck(on){ if (!AC) return; const t = now();
+              musFilter.frequency.cancelScheduledValues(t);
+              musFilter.frequency.linearRampToValueAtTime(on ? 430 : 20000, t + .35);
+              musBus.gain.cancelScheduledValues(t);
+              musBus.gain.linearRampToValueAtTime(on ? .15 : .32, t + .35); },
+    isOn(){ return musicOn; },
+    // test hook: exercise the sequencer without waiting on the audio clock
+    stepTest(n){ if (!AC) return 0; let c = 0, t = now() + .05;
+      for (let k=0;k<n;k++){ scheduleStep(k, t); c++; t += stepDur(); }
+      return c; }
+  };
+
+  // ---- sound effects ---------------------------------------------
+  const sfx = {
+    unlock(){ ac(); },
+    isMuted(){ return muted; },
+    setMuted(m){
+      muted = m;
+      try { localStorage.setItem('cjm_mute', m ? '1' : '0'); } catch(e){}
+      if (AC && master){ const t = AC.currentTime;
+        master.gain.cancelScheduledValues(t);
+        master.gain.linearRampToValueAtTime(m ? 0 : .85, t + .08); }
+    },
+    jump(){ osc(at(), 420, .13, 'square', .10, sfxBus, 720); },
+    land(){ osc(at(), 165, .08, 'sine', .10, sfxBus, 110); noise(at(), .05, .07, 'lowpass', 700); },
+    step(){ osc(at(), 230, .035, 'triangle', .035, sfxBus, 170); },
+    pickup(){ const t = at(); osc(t, 880, .09, 'triangle', .13, sfxBus); osc(t+.07, 1320, .10, 'triangle', .11, sfxBus); },
+    aid(){ const t = at(); osc(t, 620, .11, 'sine', .15, sfxBus);
+           osc(t+.09, 930, .16, 'sine', .15, sfxBus); osc(t+.18, 1240, .18, 'sine', .10, sfxBus); },
+    bump(){ noise(at(), .18, .22, 'lowpass', 900); osc(at(), 130, .18, 'sawtooth', .12, sfxBus, 80); },
+    crash(){ const t = at();
+             for (let i=0;i<4;i++) noise(t + i*.035, .07, .16 - i*.02, 'bandpass', 900 + i*380, 1.4);
+             osc(t, 240, .30, 'triangle', .10, sfxBus, 120); },
+    splash(){ const t = at(); noise(t, .22, .18, 'bandpass', 900, .8);
+              noise(t+.05, .18, .12, 'lowpass', 520); osc(t, 320, .18, 'sine', .07, sfxBus, 120); },
+    gas(){ const t = at(); noise(t, .9, .15, 'highpass', 2200, .7); noise(t+.15, .7, .10, 'bandpass', 3000, .8); },
+    whistle(){ const t = at();
+               for (let k=0;k<2;k++){ const b = t + k*.22;
+                 osc(b, 2300, .14, 'square', .07, sfxBus, 2600); osc(b+.02, 3000, .12, 'square', .05, sfxBus, 2500); } },
+    siren(){ const t = at();
+             for (let k=0;k<3;k++){ osc(t + k*.45, 620, .44, 'sawtooth', .07, sfxBus, 980);
+                                    osc(t + k*.45 + .22, 980, .22, 'sawtooth', .05, sfxBus, 640); } },
+    horn(){ const t = at(); osc(t, 220, .5, 'sawtooth', .09, sfxBus); osc(t, 165, .5, 'sawtooth', .07, sfxBus); },
+    bust(){ noise(at(), .8, .30, 'lowpass', 700); osc(at(), 95, .6, 'sawtooth', .18, sfxBus, 55); },
+    cheer(){ const t = at(); noise(t, 1.1, .15, 'bandpass', 820, .7); noise(t+.1, .9, .11, 'bandpass', 1500, .8); },
+    runstart(){ const t = at(); osc(t, 233, .3, 'sawtooth', .12, sfxBus); osc(t, 349, .3, 'sawtooth', .1, sfxBus);
+                noise(t, .5, .12, 'bandpass', 900, .7); },
+    ui(){ osc(at(), 520, .06, 'square', .09, sfxBus, 700); },
+    flag(){ const t = at(); osc(t, 660, .10, 'triangle', .13, sfxBus, 420);
+            osc(t+.09, 392, .28, 'triangle', .13, sfxBus, 250); noise(t+.05, .2, .07, 'bandpass', 1400, .8); },
+    go(){ const t = at(); [660, 880].forEach((f,i) => osc(t + i*.13, f, .12, 'square', .12, sfxBus)); },
+    win(){ const t = at(); [523,659,784,1046,1318].forEach((f,i) => osc(t + i*.13, f, .32, 'triangle', .17, sfxBus));
+           noise(t, 1.3, .10, 'bandpass', 1200, .6); },
+    lose(){ const t = at(); [440,330,247,165].forEach((f,i) => osc(t + i*.17, f, .40, 'sawtooth', .15, sfxBus)); }
+  };
+
+  return { music, sfx, unlock(){ ac(); }, isMuted(){ return muted; }, setMuted(m){ sfx.setMuted(m); },
+           debug(){ return { made: !!AC, state: AC ? AC.state : 'none', musicOn, muted, bpm, intensity: +intensity.toFixed(2), step }; } };
+})();
+const Sfx = Sound.sfx;
+
+// ------------------------- input ----------------------------------
+const input = {
+  jumpBuf: 0, jumpHeld: false, slideHeld: false, slideMin: 0,
+};
+function pressJump(){ input.jumpBuf = JUMP_BUF; input.jumpHeld = true; Sfx.unlock(); }
+function releaseJump(){ input.jumpHeld = false; }
+function pressSlide(){ input.slideHeld = true; input.slideMin = .30; }
+function releaseSlide(){ input.slideHeld = false; }
+
+window.addEventListener('keydown', e => {
+  const k = e.code;
+  if (k==='Space'||k==='ArrowUp'||k==='KeyW'){
+    e.preventDefault();
+    if (G.state === 'title' || G.state === 'won' || G.state === 'lost'){ startRun(); return; }
+    if (G.state === 'paused'){ togglePause(); return; }
+    if (!input.jumpHeld) pressJump();
+    return;
+  }
+  if (k==='ArrowDown'||k==='KeyS'){ e.preventDefault(); pressSlide(); return; }
+  if (k==='KeyP'||k==='Escape'){ e.preventDefault(); togglePause(); return; }
+  if (k==='KeyM'){ toggleMute(); return; }
+  if (k==='KeyR'){ if (G.state!=='title') startRun(); return; }
+  if (k==='Enter'){ if (G.state==='title') startRun(); else if (G.state==='won'||G.state==='lost') startRun(); }
+});
+window.addEventListener('keyup', e => {
+  const k = e.code;
+  if (k==='Space'||k==='ArrowUp'||k==='KeyW') releaseJump();
+  if (k==='ArrowDown'||k==='KeyS') releaseSlide();
+});
+cv.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('gesturestart', e => e.preventDefault());
+document.addEventListener('dblclick', e => e.preventDefault());
+
+// touch / pointer controls. Once the touch UI is on, the screen is split:
+// left half = slide, right half = jump (the on-screen buttons mirror this),
+// and a swipe up/down anywhere does the same thing.
+let touchUI = false;
+let pressId = null, pressX = 0, pressY = 0, pressKind = null;
+
+const flashBtn = el => {
+  if (!el || !touchUI) return;
+  el.classList.add('on');
+  clearTimeout(el.__flashT);
+  el.__flashT = setTimeout(() => el.classList.remove('on'), 150);
+};
+
+cv.addEventListener('pointerdown', e => {
+  e.preventDefault();
+  Sound.unlock();
+  if (G.state !== 'playing') return;
+  if (e.pointerType !== 'touch'){ if (!input.jumpHeld) pressJump(); return; }
+  pressId = e.pointerId; pressX = e.clientX; pressY = e.clientY;
+  if (e.clientX < CW*0.5){ pressKind = 'slide'; flashBtn(btnSlide); pressSlide(); }
+  else                   { pressKind = 'jump';  flashBtn(btnJump);  pressJump();  }
+});
+cv.addEventListener('pointermove', e => {
+  if (e.pointerId !== pressId) return;
+  const dy = e.clientY - pressY, dx = e.clientX - pressX;
+  if (Math.abs(dy) < 26 || Math.abs(dy) < Math.abs(dx)) return;
+  if (dy > 0 && pressKind !== 'slide'){ releaseJump();  pressKind = 'slide'; flashBtn(btnSlide); pressSlide(); }
+  if (dy < 0 && pressKind !== 'jump' ){ releaseSlide(); pressKind = 'jump';  flashBtn(btnJump);  pressJump();  }
+});
+const endPress = e => {
+  if (pressId !== null && e.pointerId !== pressId) return;
+  pressId = null; pressKind = null;
+  releaseJump(); releaseSlide();
+};
+cv.addEventListener('pointerup', endPress);
+cv.addEventListener('pointercancel', endPress);
+window.addEventListener('blur', () => { if (G.state==='playing') togglePause(); });
+
+const btnJump  = document.getElementById('btnJump');
+const btnSlide = document.getElementById('btnSlide');
+const touchBar = document.getElementById('touch');
+const enableTouchBar = () => {
+  if (touchUI) return;
+  touchUI = true;
+  touchBar.hidden = false;
+  window.removeEventListener('touchstart', enableTouchBar);
+  resize();                                  // reserve road for the buttons
+};
+window.addEventListener('touchstart', enableTouchBar, { passive: true });
+window.addEventListener('pointerdown', e => { if (e.pointerType === 'touch') enableTouchBar(); }, { passive: true });
+const bindHold = (el, down, up) => {
+  el.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); Sound.unlock(); down(); });
+  el.addEventListener('pointerup',   e => { e.preventDefault(); if (up) up(); });
+  el.addEventListener('pointercancel', () => { if (up) up(); });
+  el.addEventListener('pointerleave',  () => { if (up) up(); });
+};
+bindHold(btnJump,  pressJump,  releaseJump);
+bindHold(btnSlide, pressSlide, releaseSlide);
+
+// ------------------------- game state -----------------------------
+const G = {
+  state: 'title',           // title | playing | paused | won | lost
+  t: 0,                     // seconds in run
+  score: 0, crowd: 0, rescued: 0, streak: 0,
+  camX: 0, camY: 0,
+  shakeT: 0, shakeMag: 0,
+  flash: 0, flashCol: '255,80,60',
+  gasFlash: 0,
+  particles: [], pops: [],
+  lifeFlash: 0,             // HUD pulse when a flag is lost
+  banner: 0,                // win celebration timer
+  detainT: 0,               // detention cutscene timer
+  detainFinal: false,       // true when the last flag was lost
+  routeBanner: 0,           // "new route" banner timer
+  bannerKind: 'detain',
+  detourStep: 1,            // street shift picked when the police catch you
+  ambT: 9,                  // Delhi street ambience timer (horns, sirens)
+  best: 0,
+};
+try { G.best = parseInt(localStorage.getItem(BEST_KEY) || '0', 10) || 0; } catch(e){}
+
+const player = {
+  x: 0, y: GROUND_Y, vy: 0,
+  ground: true, slide: false, sliding: false,
+  lives: MAX_LIVES, invuln: 0,
+  gasT: 0, slowT: 0, slowMul: 1,
+  anim: 0, stepAcc: 0, coyote: 0, trail: [],
+};
+
+let obstacles = [], items = [], nextSpawnX = 0;
+
+// ------------------------- level generation -----------------------
+function resetLevel(){
+  obstacles = []; items = [];
+  player.x = 0; player.y = GROUND_Y; player.vy = 0;
+  player.ground = true; player.slide = false; player.sliding = false;
+  player.lives = MAX_LIVES; player.invuln = 0;
+  player.gasT = 0; player.slowT = 0; player.slowMul = 1;
+  player.anim = 0; player.trail = [];
+  G.t = 0; G.score = 0; G.crowd = 0; G.rescued = 0; G.streak = 0;
+  G.camX = 0;
+  G.shakeT = 0; G.flash = 0; G.gasFlash = 0;
+  G.particles = []; G.pops = []; G.banner = 0; G.lifeFlash = 0;
+  G.bannerKind = 'next'; G.detourStep = 1;
+  input.jumpBuf = 0; input.jumpHeld = false; input.slideHeld = false; input.slideMin = 0;
+  G.detainT = 0; G.routeBanner = 0; G.detainFinal = false; G.nextRoute = null; G.ambT = 9;
+  routeIndex = 0; routeDetour = 0;            // always start the march at Jamia
+  nextSpawnX = 720;
+  // opening flavour: a couple of easy barricades + a rescue
+  addHaz('barricade', 820);
+  addItem('crowd', 1080, 'low');
+  addHaz('pothole', 1360);
+  addItem('crowd', 1520, 'high');
+  nextSpawnX = 1720;
+}
+
+function addHaz(kind, x, extra){
+  const o = Object.assign({ kind, x, hit:false, t:0, wob: hash(x)*6.28 }, extra||{});
+  if (kind==='barricade'){ o.w=46; o.h=52; o.bodyY = GROUND_Y-52; o.block=true; }
+  else if (kind==='pothole'){ o.w=rand(88,118); o.h=30; o.bodyY = GROUND_Y-8; o.block=true; o.trip=true; }
+  else if (kind==='police'){ o.w=40; o.h=72; o.bodyY = GROUND_Y-72; o.bust=true; }
+  else if (kind==='gasAir'){ o.w=rand(104,146); o.h=62; o.bodyY = GROUND_Y-102; o.gas=true; }
+  else if (kind==='gasGround'){ o.w=32; o.h=42; o.bodyY = GROUND_Y-42; o.gas=true; o.block=true; }
+  obstacles.push(o);
+  return o;
+}
+function addItem(kind, x, height){
+  const it = { kind, x, t:0, taken:false, height };
+  if (kind==='crowd'){ it.w=32; it.h=48; }
+  else { it.w=30; it.h=42; }
+  it.bodyY = height==='high'   ? GROUND_Y-158
+           : height==='mid'    ? GROUND_Y-118
+           : GROUND_Y-74;
+  items.push(it);
+  return it;
+}
+
+function spawnWave(){
+  const prog  = clamp(player.x/GOAL_X, 0, 1);
+  const speed = currentSpeed();
+  const bag = [];
+  const push = (k,w) => { for (let i=0;i<(w|0);i++) bag.push(k); };
+  const w = route().weights;                 // each Delhi street has its own mix
+  push('barricade', w.barricade);
+  push('pothole',   w.pothole);
+  push('police',    prog > .14 ? w.police  : Math.min(1, w.police));
+  push('gasAir',    prog > .08 ? w.gasAir  : 0);
+  push('gasGround', prog > .20 ? w.gasGround : 0);
+  push('barricade2',prog > .24 ? w.barricade2 : 0);
+  push('pothole2',  prog > .32 ? w.pothole2 : 0);
+  push('combo',     prog > .36 ? w.combo : 0);
+  push('rescue',    w.rescue);
+  push('aid',       prog > .20 ? w.aid : 0);
+
+  const kind = pick(bag);
+  const x0 = nextSpawnX;
+  let width = 0;
+
+  switch(kind){
+    case 'barricade':  addHaz('barricade', x0); width = 46; break;
+    case 'barricade2': { const a = addHaz('barricade', x0); const b = addHaz('barricade', x0+50);
+                         a.twin = b; b.twin = a; width = 96; break; }
+    case 'pothole':    { const p = addHaz('pothole', x0); width = p.w; break; }
+    case 'pothole2':   { const p = addHaz('pothole', x0, { w: rand(150,186) }); width = p.w; break; }
+    case 'police':     { const p = addHaz('police', x0); p.homeX = x0;
+                         if (prog > .38 && Math.random() < .55){ p.vx = -70; p.walking = true; } width = 40; break; }
+    case 'gasAir':     { const g = addHaz('gasAir', x0); width = g.w; break; }
+    case 'gasGround':  { addHaz('gasGround', x0); width = 32; break; }
+    case 'combo': {
+      addHaz('barricade', x0);
+      const gap = Math.max(300, speed*0.72);
+      addHaz('gasAir', x0 + 46 + gap);
+      addItem('crowd', x0 + 46 + gap*0.5, 'mid');
+      width = 46 + gap + 130;
+      break;
+    }
+    case 'rescue': {
+      const n = randInt(1,3), h0 = Math.random() < .4 ? 'high' : 'low';
+      for (let i=0;i<n;i++) addItem('crowd', x0 + i*rand(96,132), Math.random() < .45 ? 'high' : h0);
+      width = (n-1)*120 + 34;
+      break;
+    }
+    case 'aid': addItem('aid', x0, pick(['mid','low','high'])); width = 30; break;
+  }
+
+  const gapTime = lerp(1.52, 1.10, prog) * rand(1.0, 1.25);
+  nextSpawnX = x0 + width + speed*gapTime;
+}
+
+// ------------------------- physics / helpers ----------------------
+function currentSpeed(){
+  const prog = clamp(player.x/GOAL_X, 0, 1);
+  const base = 372 + 244*prog;
+  return base * (player.slowT > 0 ? player.slowMul : 1);
+}
+function playerBox(){
+  const h = player.sliding ? 34 : 66;
+  return { x: player.x - 19, y: player.y - h, w: 38, h };
+}
+function hazBox(o){
+  return { x: o.x, y: o.bodyY, w: o.w, h: o.h };
+}
+function overlap(a,b){
+  return a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y;
+}
+function reduceCrowd(n){
+  const lost = Math.min(G.crowd, n);
+  G.crowd -= lost;
+  for (let i=0;i<lost*2;i++) puff(player.x - rand(40,180), GROUND_Y - rand(10,60), '#e8e2d4', rand(40,110), .5);
+}
+function addScore(n){ G.score += n; }
+function shake(mag, dur){ G.shakeMag = Math.max(G.shakeMag, mag); G.shakeT = Math.max(G.shakeT, dur); }
+function flash(col, a){ G.flashCol = col; G.flash = Math.max(G.flash, a); }
+
+function puff(x,y,col,spd,life,size){
+  G.particles.push({
+    x, y, vx: rand(-spd,spd)*.5, vy: rand(-spd,spd*.35),
+    life, max: life, col, size: size || rand(3,7), g: rand(120,420), fade: 1
+  });
+}
+function spark(x,y,col,spd,n){
+  for (let i=0;i<n;i++) puff(x,y,col,spd,rand(.25,.6),rand(2,5));
+}
+// floating world-space text ("+160", "FLAG LOST")
+function popText(x, y, txt, col){
+  G.pops.push({ x, y, txt, col, life: 1.25, max: 1.25 });
+}
+
+// ------------------------- events ---------------------------------
+// Every obstacle costs a flag: barricades, potholes and tear gas cost one
+// flag and slow you down; officers cost a flag *and* bundle you off to a
+// different Delhi street. A water bottle is the only way to win one back.
+function takeLife(){
+  if (player.lives <= 0) return false;
+  player.lives--;
+  G.streak = 0;                        // a hit breaks the protestor streak
+  G.lifeFlash = 1.6;
+  return player.lives <= 0;
+}
+function onBump(o, hard){
+  if (player.invuln > 0) return;
+  if (hard){ detain(o); return; }
+  player.invuln = HIT_INVULN;
+  const dead = takeLife();
+  if (o.trip){
+    player.slowT = 1.05; player.slowMul = .58;
+    player.x = Math.max(0, player.x - 34);
+    shake(9, .28); flash('255,150,60', .22);
+    spark(player.x, GROUND_Y-6, '#6b6f77', 180, 12);
+    Sfx.splash();
+  } else {
+    player.slowT = 1.2; player.slowMul = .5;
+    player.x = Math.max(0, player.x - 46);
+    shake(12, .3); flash('255,170,70', .26);
+    spark(o.x+10, GROUND_Y-40, '#d9dee6', 220, 14);
+    Sfx.crash();
+  }
+  if (dead) lose(); else flagLost(o);
+}
+
+// a flag goes down: the protestor is picked off the line
+function flagLost(o){
+  const x = o ? o.x + (o.w||40)/2 : player.x + 30;
+  popText(x, GROUND_Y-120, 'FLAG LOST', '#ff8a6a');
+  Sfx.flag();
+}
+
+// police catch you -> a flag, and off the route onto another one
+function detain(o){
+  player.lives--;
+  if (player.lives < 0) player.lives = 0;
+  G.streak = 0;
+  G.lifeFlash = 1.6;
+  G.detainFinal = player.lives <= 0;
+  if (G.detainFinal){
+    G.detourStep = 0; G.nextRoute = null;
+  } else {
+    // they drop you on a street you weren't on: shift the section by a non-zero step
+    const n = ROUTES.length;
+    G.detourStep = randInt(1, n-1);
+    G.nextRoute = (sectionIndex() + ((routeDetour + G.detourStep) % n)) % n;
+  }
+  player.invuln = 4;
+  player.slowT = 0; player.slowMul = 1;
+  reduceCrowd(3);
+  spark(o.x + o.w/2, GROUND_Y-70, '#ffe9c9', 340, 22);
+  shake(26, .7); flash('255,60,45', .62);
+  Sfx.bust(); Sfx.whistle(); Sfx.siren();
+  Sound.music.duck(true);
+  G.detainT = 0;
+  G.state = 'detained';
+}
+
+function finishDetain(){
+  if (G.detainFinal){ G.state = 'playing'; lose(); return; }
+  player.x = clamp(player.x + 180, 200, GOAL_X - 260);
+  routeDetour = (routeDetour + (G.detourStep||1)) % ROUTES.length;
+  routeIndex = routeWanted();                // now we're on a different street
+  G.nextRoute = routeIndex;
+  player.y = GROUND_Y; player.vy = 0; player.ground = true;
+  player.slide = false; player.sliding = false;
+  player.slowT = 0; player.slowMul = 1; player.gasT = 0;
+  player.invuln = 2.8;
+  player.trail = [];
+  obstacles = []; items = []; G.particles = []; G.pops = [];
+  nextSpawnX = player.x + 950;               // a clean stretch of the new route
+  G.camX = Math.max(0, player.x - playerScreenX());
+  G.routeBanner = 3.6; G.bannerKind = 'detain';
+  G.ambT = rand(6, 12);
+  Sound.music.duck(false);
+  Sound.music.progress(clamp(player.x/GOAL_X, 0, 1));
+  Sfx.runstart();
+  G.state = 'playing';
+}
+function onGas(o){
+  if (player.invuln > 0) return;
+  player.invuln = HIT_INVULN;
+  const dead = takeLife();
+  player.gasT = 2.8;
+  player.slowT = Math.max(player.slowT, 1.7);
+  player.slowMul = Math.min(player.slowMul, .74);
+  G.gasFlash = 1;
+  flash('190,220,120', .30);
+  for (let i=0;i<26;i++) puff(o.x + rand(0,o.w), o.bodyY + rand(0,o.h), i%3?'#cfd8a8':'#a9b889', 150, rand(.5,1.2), rand(6,14));
+  Sfx.gas();
+  shake(8, .3);
+  if (dead) lose(); else flagLost(o);
+}
+
+// ------------------------- update ---------------------------------
+let stepTimer = 0;
+function update(dt){
+  // -------- timers --------
+  input.jumpBuf = Math.max(0, input.jumpBuf - dt);
+  input.slideMin = Math.max(0, input.slideMin - dt);
+  player.invuln = Math.max(0, player.invuln - dt);
+  player.gasT   = Math.max(0, player.gasT - dt);
+  player.slowT  = Math.max(0, player.slowT - dt);
+  G.shakeT = Math.max(0, G.shakeT - dt);
+  G.flash  = Math.max(0, G.flash - dt*2.2);
+  G.gasFlash = Math.max(0, G.gasFlash - dt*1.1);
+  G.routeBanner = Math.max(0, G.routeBanner - dt);
+  G.lifeFlash   = Math.max(0, G.lifeFlash - dt);
+  // the march walks on through Delhi: each fifth of the route is the next street
+  const wantRoute = routeWanted();
+  if (wantRoute !== routeIndex){
+    routeIndex = wantRoute;
+    G.routeBanner = 3.6; G.bannerKind = 'next';
+    Sfx.go();
+  }
+  if (player.slowT <= 0) player.slowMul = 1;
+  Sound.music.progress(clamp(player.x/GOAL_X, 0, 1));   // the march picks up pace
+
+  // -------- Delhi street ambience: horns and distant sirens --------
+  G.ambT -= dt;
+  if (G.ambT <= 0){
+    G.ambT = rand(7, 15);
+    const r = Math.random();
+    if (r < .5) Sfx.horn();
+    else if (r < .8) Sfx.siren();
+  }
+
+  // -------- jump --------
+  if (player.ground) player.coyote = COYOTE;
+  else player.coyote = Math.max(0, player.coyote - dt);
+
+  if (input.jumpBuf > 0 && (player.ground || player.coyote > 0)){
+    input.jumpBuf = 0; player.coyote = 0;
+    player.vy = JUMP_V; player.ground = false;
+    player.sliding = false; input.slideMin = 0;
+    Sfx.jump();
+    for (let i=0;i<7;i++) puff(player.x + rand(-14,14), GROUND_Y - rand(0,6), '#b9bcc4', 90, .35, rand(3,6));
+  }
+  if (!input.jumpHeld && player.vy < JUMP_CUT) player.vy = JUMP_CUT;
+
+  // -------- slide --------
+  player.sliding = player.ground && (input.slideHeld || input.slideMin > 0);
+  if (player.sliding && Math.random() < .5)
+    puff(player.x - 16, GROUND_Y - rand(0,8), '#a8adb6', 80, .28, rand(2,5));
+
+  // -------- vertical physics --------
+  const g = player.sliding ? GRAV_SINK : ((player.vy < 0 && input.jumpHeld) ? GRAV_HOLD : GRAV);
+  player.vy += g*dt;
+  player.y  += player.vy*dt;
+  if (player.y >= GROUND_Y){
+    if (!player.ground){
+      Sfx.land();
+      shake(4, .14);
+      for (let i=0;i<9;i++) puff(player.x + rand(-18,18), GROUND_Y - rand(0,4), '#c3c7cf', 130, .35, rand(3,6));
+    }
+    player.y = GROUND_Y; player.vy = 0; player.ground = true;
+  }
+
+  // -------- advance --------
+  const speed = currentSpeed();
+  player.x += speed*dt;
+  G.t += dt;
+  addScore(speed*dt*0.02);
+
+  // run cycle dust
+  player.anim += dt * (player.ground && !player.sliding ? speed/58 : 4);
+  if (player.ground && !player.sliding){
+    stepTimer -= dt;
+    if (stepTimer <= 0){
+      stepTimer = .26;
+      puff(player.x - 14, GROUND_Y - 2, '#aeb3bb', 70, .3, rand(2,4));
+      Sfx.step();
+    }
+  }
+
+  // -------- trail for the crowd --------
+  player.trail.unshift({ x: player.x, y: player.y });
+  const need = 22 + Math.min(G.crowd, 14)*8;
+  if (player.trail.length > need) player.trail.length = need;
+
+  // -------- spawn --------
+  const ahead = player.x + VW + 700;
+  while (nextSpawnX < ahead){
+    if (nextSpawnX > GOAL_X - 600){ nextSpawnX = GOAL_X + 2000; break; }  // keep the finish clear
+    spawnWave();
+  }
+
+  // -------- obstacles --------
+  const pbox = playerBox();
+  for (let i=obstacles.length-1; i>=0; i--){
+    const o = obstacles[i];
+    o.t += dt;
+    if (o.walking){
+      // approach only once you're in sight, and never drift back into the previous wave
+      if (player.x > o.x - 820) o.x = Math.max(o.homeX - 150, o.x + o.vx*dt);
+      o.bodyY = GROUND_Y - 72 - Math.abs(Math.sin(o.t*7))*3;
+    }
+    if (o.x + o.w < G.camX - 320){ obstacles.splice(i,1); continue; }
+    if (o.hit) continue;
+    if (overlap(pbox, hazBox(o))){
+      o.hit = true;
+      if (o.gas && o.kind === 'gasAir') onGas(o);
+      else if (o.gas){ onGas(o); onBump(o, false); o.hit = true; }
+      else if (o.bust) onBump(o, true);
+      else onBump(o, false);
+    }
+  }
+
+  // -------- items --------
+  const ibox = playerBox();
+  for (let i=items.length-1; i>=0; i--){
+    const it = items[i];
+    it.t += dt;
+    if (it.taken){ items.splice(i,1); continue; }
+    if (it.x + it.w < G.camX - 300){ items.splice(i,1); continue; }
+    if (overlap(ibox, { x: it.x, y: it.bodyY, w: it.w, h: it.h })){
+      it.taken = true;
+      if (it.kind === 'crowd'){
+        const mult = 1 + Math.min(G.streak, STREAK_CAP)*STREAK_STEP;
+        const gain = Math.round(RESCUE_BASE*mult);
+        G.crowd++; G.rescued++; G.streak++;
+        addScore(gain);
+        popText(it.x + 16, it.bodyY - 14, '+'+gain, '#8ff0a4');
+        Sfx.pickup();
+        if (G.streak % 5 === 0) Sfx.cheer();
+        for (let k=0;k<14;k++) puff(it.x+16, it.bodyY+22, k%2?'#ffd27a':'#8ff0a4', 200, .55, rand(3,6));
+      } else {
+        const full = player.lives >= MAX_LIVES;
+        player.lives = Math.min(MAX_LIVES, player.lives+1);
+        addScore(25);
+        popText(it.x + 15, it.bodyY - 14, full ? '+25' : '+1 FLAG', '#9fe8ff');
+        Sfx.aid();
+        for (let k=0;k<16;k++) puff(it.x+15, it.bodyY+20, k%2?'#9fe8ff':'#ffffff', 200, .6, rand(3,7));
+      }
+    }
+  }
+
+  // -------- particles --------
+  for (let i=G.particles.length-1;i>=0;i--){
+    const p = G.particles[i];
+    p.life -= dt;
+    if (p.life <= 0){ G.particles.splice(i,1); continue; }
+    p.vy += p.g*dt;
+    p.x += p.vx*dt; p.y += p.vy*dt;
+    p.vx *= (1 - 1.6*dt);
+    if (p.y > GROUND_Y){ p.y = GROUND_Y; p.vy *= -.28; p.vx *= .6; }
+  }
+  for (let i=G.pops.length-1;i>=0;i--){
+    const p = G.pops[i];
+    p.life -= dt; p.y -= 48*dt;
+    if (p.life <= 0) G.pops.splice(i,1);
+  }
+
+  // -------- camera --------
+  G.camX = player.x - playerScreenX();
+  if (G.camX < 0) G.camX = 0;
+
+  // -------- win --------
+  if (player.x >= GOAL_X) win();
+}
+
+function playerScreenX(){
+  return clamp(VW*0.30, 150, 430);
+}
+
+// ------------------------- state changes --------------------------
+const ovTitle = document.getElementById('ovTitle');
+const ovPause = document.getElementById('ovPause');
+const ovWin   = document.getElementById('ovWin');
+const ovLose  = document.getElementById('ovLose');
+
+function show()        { ovTitle.hidden = true; ovPause.hidden = true; ovWin.hidden = true; ovLose.hidden = true; }
+function showTitle()   { show(); ovTitle.hidden = false; }
+function showWin()     { show(); ovWin.hidden = false; }
+function showLose()    { show(); ovLose.hidden = false; }
+function showPause()   { show(); ovPause.hidden = false; }
+
+function startRun(){
+  resetLevel();
+  show();
+  G.state = 'playing';
+  Sfx.unlock();
+  Sound.music.duck(false);
+  Sound.music.progress(0);
+  Sound.music.start();                 // dhol + crowd march, starts on user gesture
+  Sfx.runstart();
+  setTimeout(() => { if (G.state === 'playing') Sfx.go(); }, 420);
+}
+function togglePause(){
+  if (G.state === 'playing'){ G.state = 'paused'; showPause(); Sound.music.duck(true); }
+  else if (G.state === 'paused'){ G.state = 'playing'; show(); Sound.music.duck(false); }
+}
+function toggleMute(){
+  const m = !Sfx.isMuted();
+  Sfx.setMuted(m);
+  document.getElementById('btnMute').innerHTML = m ? '&#128263;' : '&#128266;';
+}
+function finalScore(){
+  const bonus = Math.max(0, 170 - G.t)*8;
+  return Math.round(G.score + G.crowd*CROWD_BONUS + player.lives*220 + bonus);
+}
+function statCard(rows){
+  return rows.map(r => `<div><b>${r[1]}</b><i>${r[0]}</i></div>`).join('');
+}
+function win(){
+  if (G.state !== 'playing') return;
+  G.state = 'won';
+  const sc = finalScore();
+  const isBest = sc > G.best;
+  if (isBest){ G.best = sc; try{ localStorage.setItem(BEST_KEY, String(sc)); }catch(e){} }
+  const km = (player.x*METRES_PER_UNIT/1000).toFixed(2);
+  document.getElementById('winStats').innerHTML = statCard([
+    ['Protestors', G.crowd],
+    ['Rescued', G.rescued],
+    ['Distance', km + ' km'],
+    ['Flags left', player.lives],
+    ['Time', G.t.toFixed(1) + 's'],
+    ['Score', sc],
+    [isBest ? 'New best!' : 'Best', G.best],
+  ]);
+  for (let i=0;i<90;i++)
+    puff(GOAL_X + rand(-260,420), rand(160, GROUND_Y), pick(['#ff9933','#ffffff','#1a9e2f','#ffd84d']),
+         rand(120,420), rand(.8,1.7), rand(3,7));
+  G.banner = 1;
+  shake(16, .6);
+  Sound.music.stop();
+  Sfx.cheer();
+  Sfx.win();
+  document.getElementById('btnWinAgain').focus();
+  showWin();
+}
+function lose(){
+  if (G.state !== 'playing') return;
+  G.state = 'lost';
+  const sc = finalScore();
+  const isBest = sc > G.best;
+  if (isBest){ G.best = sc; try{ localStorage.setItem(BEST_KEY, String(sc)); }catch(e){} }
+  const km = (player.x*METRES_PER_UNIT/1000).toFixed(2);
+  document.getElementById('loseStats').innerHTML = statCard([
+    ['Protestors', G.crowd],
+    ['Rescued', G.rescued],
+    ['Distance', km + ' km'],
+    ['Walked', Math.round(clamp(player.x/GOAL_X,0,1)*100) + '%'],
+    ['Last street', route().short],
+    ['Score', sc],
+    [isBest ? 'New best!' : 'Best', G.best],
+  ]);
+  shake(26, .8); flash('255,60,45', .7);
+  Sound.music.stop();
+  Sfx.lose();
+  document.getElementById('btnRetry').focus();
+  showLose();
+}
+
+// buttons
+const btn = id => document.getElementById(id);
+btn('btnPlay').addEventListener('click', () => { Sfx.ui(); startRun(); });
+btn('btnResume').addEventListener('click', () => { Sfx.ui(); togglePause(); });
+btn('btnQuit').addEventListener('click', () => { Sfx.ui(); startRun(); });
+btn('btnWinAgain').addEventListener('click', () => { Sfx.ui(); startRun(); });
+btn('btnRetry').addEventListener('click', () => { Sfx.ui(); startRun(); });
+btn('btnMute').addEventListener('click', toggleMute);
+btn('btnPause').addEventListener('click', () => {
+  Sfx.ui();
+  if (G.state === 'playing' || G.state === 'paused') togglePause();
+});
+if (Sfx.isMuted()) document.getElementById('btnMute').innerHTML = '&#128263;';
+
+// ------------------------- drawing: world -------------------------
+// ---------------- Delhi landmark painters ----------------
+// All of these take screen-space coords and draw silhouettes / simple
+// forms, so they read as "that's Delhi" even in the haze of the far layer.
+
+function minaret(x, baseY, h, col){
+  ctx.fillStyle = col;
+  const w = h*0.085;
+  ctx.fillRect(x-w/2, baseY-h, w, h);
+  ctx.fillRect(x-w*1.1, baseY-h*0.62, w*2.2, 4);
+  ctx.fillRect(x-w*1.1, baseY-h*0.32, w*2.2, 4);
+  ctx.beginPath(); ctx.arc(x, baseY-h, w*0.95, Math.PI, 0); ctx.fill();
+  ctx.fillRect(x-1.4, baseY-h-w*1.6, 2.8, w*1.6);
+}
+
+function archGate(x, baseY, w, col){
+  const h = w*0.95;
+  ctx.fillStyle = col;
+  ctx.fillRect(x, baseY-h, w, h);
+  ctx.fillRect(x-8, baseY-h*0.62, w+16, 8);
+  ctx.beginPath();
+  ctx.rect(x+w*0.28, baseY-h*0.7, w*0.44, h*0.7);
+  ctx.moveTo(x+w*0.28, baseY-h*0.5);
+  ctx.arc(x+w*0.5, baseY-h*0.5, w*0.22, Math.PI, 0);
+  ctx.closePath();
+  ctx.globalCompositeOperation = 'destination-out';
+  ctx.fill();
+  ctx.globalCompositeOperation = 'source-over';
+  for (let k=0;k<4;k++) ctx.fillRect(x + w*(0.08+k*0.26), baseY-h-9, w*0.12, 9);
+}
+
+function waterTank(x, y, r, col){
+  ctx.fillStyle = col;
+  ctx.fillRect(x-r/2, y+r*0.5, r, r*0.6);
+  circle(x, y, r); ctx.fill();
+}
+
+function windowsRect(x, y, w, h, a){
+  ctx.fillStyle = 'rgba(255,236,190,' + (a||.16) + ')';
+  for (let wy = y+14; wy < y+h-8; wy += 26)
+    for (let wx = x+12; wx < x+w-16; wx += 30)
+      ctx.fillRect(wx, wy, 15, 13);
+}
+
+// India Gate: big block, deep central arch, side arches, shallow dome
+function landmarkIndiaGate(cx, baseY, s, col){
+  const w = 176*s, h = 148*s;
+  ctx.fillStyle = col;
+  ctx.beginPath();
+  ctx.rect(cx-w/2, baseY-h, w, h);
+  // central arch
+  ctx.moveTo(cx-22*s, baseY);
+  ctx.lineTo(cx-22*s, baseY-74*s);
+  ctx.arc(cx, baseY-74*s, 22*s, Math.PI, 0);
+  ctx.lineTo(cx+22*s, baseY);
+  ctx.closePath();
+  // side arches
+  for (const sx of [-1, 1]){
+    const ax = cx + sx*w*0.33;
+    ctx.moveTo(ax-9*s, baseY);
+    ctx.lineTo(ax-9*s, baseY-42*s);
+    ctx.arc(ax, baseY-42*s, 9*s, Math.PI, 0);
+    ctx.lineTo(ax+9*s, baseY);
+    ctx.closePath();
+  }
+  ctx.fill('evenodd');
+  ctx.fillStyle = col;
+  ctx.fillRect(cx-w/2-6, baseY-h-10, w+12, 10);         // cornice
+  ctx.beginPath(); ctx.arc(cx, baseY-h-10, 26*s, Math.PI, 0); ctx.fill();  // dome
+  ctx.fillRect(cx-3, baseY-h-10-30*s, 6, 12*s);
+}
+
+function landmarkQutub(cx, baseY, h, col){
+  ctx.fillStyle = col;
+  const steps = 5;
+  for (let k=0;k<steps;k++){
+    const w = 30*(1 - (k/steps)*0.44);
+    const y0 = baseY - h*(k+1)/steps, y1 = baseY - h*k/steps;
+    ctx.fillRect(cx-w/2, y0, w, y1-y0 + 1);
+    ctx.fillRect(cx-w/2-6, y0, w+12, 5);
+  }
+  ctx.beginPath(); ctx.arc(cx, baseY-h-9, 9, Math.PI, 0); ctx.fill();
+  ctx.fillRect(cx-2, baseY-h-24, 4, 12);
+}
+
+function landmarkRedFort(x, baseY, w, col){
+  const H = 96;
+  ctx.fillStyle = col;
+  ctx.fillRect(x, baseY-H, w, H);
+  for (let bx = x+4; bx < x+w-10; bx += 24) ctx.fillRect(bx, baseY-H-9, 13, 9);   // battlements
+  const gw = 78, gx = x + w/2 - gw/2;
+  ctx.fillRect(gx, baseY-H-26, gw, H+26);                                          // Lahori gate
+  ctx.fillStyle = 'rgba(24,16,14,.85)';
+  ctx.beginPath();                                                                 // gate arch
+  ctx.moveTo(gx+16, baseY);
+  ctx.lineTo(gx+16, baseY-58);
+  ctx.arc(gx+gw/2, baseY-58, gw/2-16, Math.PI, 0);
+  ctx.lineTo(gx+gw-16, baseY);
+  ctx.closePath(); ctx.fill();
+  for (const side of [-1, 1]){                                                     // chhatris
+    const cx2 = x + w/2 + side*w*0.34;
+    ctx.fillStyle = col;
+    ctx.fillRect(cx2-2, baseY-H-30, 4, 30);
+    ctx.beginPath(); ctx.arc(cx2, baseY-H-30, 11, Math.PI, 0); ctx.fill();
+    ctx.fillRect(cx2-1.5, baseY-H-48, 3, 8);
+  }
+}
+
+function landmarkLotus(cx, baseY, s, col){
+  ctx.fillStyle = col;
+  for (let k=0;k<5;k++){
+    const a = -Math.PI/2 + (k-2)*0.44;
+    ctx.save(); ctx.translate(cx, baseY); ctx.rotate(a + Math.PI/2);
+    ctx.beginPath();
+    ctx.moveTo(0,0);
+    ctx.quadraticCurveTo(-26*s, -66*s, 0, -106*s);
+    ctx.quadraticCurveTo(26*s, -66*s, 0, 0);
+    ctx.fill();
+    ctx.restore();
+  }
+  ctx.fillRect(cx-44*s, baseY-9*s, 88*s, 11*s);
+}
+
+function landmarkDomeBlock(x, baseY, w, h, col){
+  ctx.fillStyle = col;
+  ctx.fillRect(x, baseY-h, w, h);
+  ctx.fillRect(x-7, baseY-h-11, w+14, 11);
+  const cx = x + w/2, r = w*0.21;
+  ctx.beginPath(); ctx.arc(cx, baseY-h-11, r, Math.PI, 0); ctx.fill();
+  ctx.fillRect(cx-3, baseY-h-11-r-16, 6, 16);
+  ctx.fillStyle = 'rgba(255,255,255,.10)';
+  for (let k=14; k<w-20; k+=28) ctx.fillRect(x+k, baseY-h+16, 9, h-22);
+  ctx.fillStyle = 'rgba(255,255,255,.06)';
+  for (let k=14; k<w-24; k+=28) ctx.fillRect(x+k, baseY-h+16, 9, h-22);
+}
+
+function landmarkColonnade(x, baseY, w, h, col){
+  ctx.fillStyle = col;
+  ctx.fillRect(x, baseY-h, w, h);
+  ctx.fillRect(x-7, baseY-h-9, w+14, 9);
+  ctx.fillStyle = 'rgba(26,32,40,.8)';
+  for (let k=0; k+48 < w; k += 56){
+    ctx.beginPath();
+    ctx.moveTo(x+k+10, baseY);
+    ctx.lineTo(x+k+10, baseY-h+34);
+    ctx.arc(x+k+31, baseY-h+34, 21, Math.PI, 0);
+    ctx.lineTo(x+k+52, baseY);
+    ctx.closePath(); ctx.fill();
+  }
+}
+
+function metroPillar(x, baseY, h, col, s){
+  s = s || 1;
+  ctx.fillStyle = col;
+  ctx.fillRect(x-9*s, baseY-h, 18*s, h);
+  ctx.fillRect(x-46*s, baseY-h-15*s, 92*s, 15*s);
+  ctx.fillStyle = 'rgba(255,255,255,.09)';
+  ctx.fillRect(x-9*s, baseY-h, 6*s, h);
+}
+
+function metroTrain(x, y, w, col){
+  ctx.fillStyle = col;
+  rr(x, y, w, 26, 5); ctx.fill();
+  ctx.fillStyle = 'rgba(235,245,255,.42)';
+  for (let k=8; k < w-24; k += 20) ctx.fillRect(x+k, y+6, 12, 9);
+  ctx.fillStyle = 'rgba(0,0,0,.28)';
+  ctx.fillRect(x, y+22, w, 4);
+  ctx.fillStyle = '#d94b3f';
+  ctx.fillRect(x+w-20, y+4, 14, 6);
+}
+
+// ---------------- Delhi street props ----------------
+function propBus(x, baseY, s){          // DTC-style city bus
+  s = s || 1;
+  const w = 210*s, h = 62*s;
+  ctx.fillStyle = '#c8402f';
+  rr(x, baseY-h, w, h, 6); ctx.fill();
+  ctx.fillStyle = '#e8e2d6';
+  rr(x, baseY-h*0.62, w, h*0.30, 4); ctx.fill();
+  ctx.fillStyle = '#2b323c';
+  for (let k=12; k < w-40; k += 42) ctx.fillRect(x+k, baseY-h*0.52, 30*s, 20*s);
+  ctx.fillStyle = '#2b323c';
+  ctx.fillRect(x+w-46*s, baseY-h*0.78, 34*s, 24*s);
+  ctx.fillStyle = '#1b1f24';
+  circle(x+34*s, baseY-7*s, 9*s); ctx.fill();
+  circle(x+w-34*s, baseY-7*s, 9*s); ctx.fill();
+}
+
+function propAuto(x, baseY, s){         // green & yellow auto-rickshaw
+  s = s || 1;
+  ctx.fillStyle = '#1f9c46';
+  rr(x, baseY-30*s, 60*s, 30*s, 8*s); ctx.fill();
+  ctx.fillStyle = '#f2c33c';
+  ctx.beginPath();
+  ctx.moveTo(x+8*s, baseY-30*s);
+  ctx.quadraticCurveTo(x+30*s, baseY-56*s, x+52*s, baseY-30*s);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle = 'rgba(30,40,50,.75)';
+  ctx.beginPath();
+  ctx.moveTo(x+16*s, baseY-31*s);
+  ctx.quadraticCurveTo(x+30*s, baseY-48*s, x+44*s, baseY-31*s);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#1b1f24';
+  circle(x+13*s, baseY-5*s, 6*s); ctx.fill();
+  circle(x+48*s, baseY-5*s, 6*s); ctx.fill();
+}
+
+function propCycleRickshaw(x, baseY, s){
+  s = s || 1;
+  ctx.strokeStyle = '#3a4149'; ctx.lineWidth = 2.2;
+  circle(x+14*s, baseY-9*s, 9*s); ctx.stroke();
+  circle(x+44*s, baseY-8*s, 8*s); ctx.stroke();
+  ctx.fillStyle = '#2f5f8f';
+  ctx.fillRect(x+16*s, baseY-34*s, 30*s, 20*s);
+  ctx.fillStyle = '#1b1f24';
+  ctx.fillRect(x+44*s, baseY-34*s, 4*s, 34*s);
+}
+
+function propChaiStall(x, baseY){
+  ctx.fillStyle = '#6b4a2c';
+  ctx.fillRect(x, baseY-44, 84, 44);
+  ctx.fillStyle = '#3d5a44';
+  ctx.fillRect(x-8, baseY-62, 100, 8);
+  ctx.fillRect(x-4, baseY-54, 5, 12);
+  ctx.fillRect(x+82, baseY-54, 5, 12);
+  ctx.fillStyle = '#d9d2c4';
+  ctx.fillRect(x+10, baseY-40, 26, 12);
+  ctx.fillStyle = '#8c8f96';
+  ctx.fillRect(x+48, baseY-38, 18, 10);
+  ctx.globalAlpha = .3;
+  ctx.fillStyle = '#e9e6dd';
+  for (let k=0;k<3;k++) circle(x+57, baseY-46-k*7, 7-k*1.6), ctx.fill();
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = '#b8543f';
+  ctx.fillRect(x+20, baseY-58, 22, 12);      // hanging signboard
+}
+
+function propDog(x, baseY){
+  ctx.fillStyle = '#a9743f';
+  ctx.fillRect(x, baseY-14, 26, 10);
+  ctx.fillRect(x+22, baseY-22, 10, 10);
+  ctx.fillRect(x+2, baseY-5, 4, 6);
+  ctx.fillRect(x+18, baseY-5, 4, 6);
+  ctx.strokeStyle = '#a9743f'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(x+1, baseY-13); ctx.lineTo(x-6, baseY-20); ctx.stroke();
+  ctx.fillStyle = '#3b2f24';
+  circle(x+30, baseY-19, 1.8); ctx.fill();
+}
+
+function propSign(x, y, text){
+  ctx.fillStyle = '#2f3944';
+  ctx.fillRect(x+26, y+26, 6, 92);
+  ctx.fillStyle = '#0f7b4f';
+  rr(x, y, 168, 34, 5); ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,.6)'; ctx.lineWidth = 2;
+  rr(x, y, 168, 34, 5); ctx.stroke();
+  ctx.fillStyle = '#fff';
+  ctx.font = '700 15px Segoe UI, Arial';
+  ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  ctx.fillText(text, x+12, y+18);
+  ctx.textBaseline = 'alphabetic';
+}
+
+function propVan(x, baseY, s, lights){
+  s = s || 1;
+  const w = 210*s, h = 84*s;
+  // body
+  ctx.fillStyle = '#eef1f4';
+  rr(x, baseY-h, w, h, 7); ctx.fill();
+  ctx.fillStyle = '#1b4f9c';                       // blue band
+  ctx.fillRect(x, baseY-h*0.52, w, h*0.20);
+  ctx.fillStyle = '#10233d';
+  ctx.fillRect(x+w*0.52, baseY-h*0.72, w*0.34, h*0.34);   // side window
+  ctx.fillRect(x+w*0.08, baseY-h*0.72, w*0.28, h*0.34);
+  // bonnet
+  ctx.fillStyle = '#eef1f4';
+  ctx.fillRect(x-34*s, baseY-h*0.62, 36*s, h*0.5);
+  ctx.fillStyle = 'rgba(30,40,52,.8)';
+  rr(x-30*s, baseY-h*0.56, 26*s, h*0.22, 4); ctx.fill();
+  // wheels
+  ctx.fillStyle = '#191d22';
+  circle(x+40*s, baseY-10*s, 12*s); ctx.fill();
+  circle(x+w-44*s, baseY-10*s, 12*s); ctx.fill();
+  ctx.fillStyle = '#4a515a';
+  circle(x+40*s, baseY-10*s, 4*s); ctx.fill();
+  circle(x+w-44*s, baseY-10*s, 4*s); ctx.fill();
+  // light bar
+  ctx.fillStyle = '#2b323c';
+  ctx.fillRect(x+w*0.18, baseY-h-8*s, w*0.42, 7*s);
+  const flash = Math.floor((G.t||0)*8) % 2;
+  ctx.fillStyle = flash ? '#ff3b2f' : '#2a7cff';
+  ctx.fillRect(x+w*0.18, baseY-h-8*s, w*0.21, 7*s);
+  ctx.fillStyle = flash ? '#2a7cff' : '#ff3b2f';
+  ctx.fillRect(x+w*0.39, baseY-h-8*s, w*0.21, 7*s);
+  // lettering
+  ctx.fillStyle = '#10233d';
+  ctx.font = '800 ' + Math.round(15*s) + 'px Segoe UI, Arial';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('DELHI POLICE', x + w*0.62, baseY-h*0.85);
+  ctx.fillStyle = '#fff';
+  ctx.font = '800 ' + Math.round(13*s) + 'px Segoe UI, Arial';
+  ctx.fillText('DELHI POLICE', x + w*0.62, baseY-h*0.40);
+  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  if (lights){
+    ctx.globalAlpha = .35 + .25*Math.sin(G.t*9);
+    ctx.fillStyle = '#8fc4ff';
+    circle(x-40*s, baseY-h*0.4, 60*s); ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+}
+
+function drawKite(x, y, s, t){
+  ctx.save(); ctx.translate(x, y); ctx.rotate(Math.sin(t)*.26);
+  ctx.fillStyle = ['#ff9933','#e2493c','#2f8fd6','#1a9e2f'][Math.abs(Math.floor(t*1.4)) % 4];
+  ctx.beginPath();
+  ctx.moveTo(0,-15*s); ctx.lineTo(11*s,0); ctx.lineTo(0,15*s); ctx.lineTo(-11*s,0);
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,.55)'; ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.moveTo(0,-15*s); ctx.lineTo(0,15*s); ctx.moveTo(-11*s,0); ctx.lineTo(11*s,0);
+  ctx.moveTo(0,15*s); ctx.quadraticCurveTo(9*s, 27*s, -5*s, 36*s);
+  ctx.stroke();
+  ctx.restore();
+}
+
+// ---------------- layers ----------------
+function drawSky(){
+  const sk = route().sky;
+  const g = ctx.createLinearGradient(0, TOPY, 0, VH);
+  g.addColorStop(0, sk[0]); g.addColorStop(.48, sk[1]); g.addColorStop(1, sk[2]);
+  ctx.fillStyle = g;
+  ctx.fillRect(0, TOPY, VW, VH - TOPY);
+  // hazy sun: soft glow, no hard disc (kept inside the visible sky band,
+  // which may be much taller than the design on a portrait phone)
+  const skySpan = Math.max(260, VH - TOPY);
+  const sunX = VW*0.77, sunY = TOPY + skySpan*0.18;
+  const sg = ctx.createRadialGradient(sunX, sunY, 8, sunX, sunY, 200);
+  sg.addColorStop(0,  'rgba(255,242,208,.60)');
+  sg.addColorStop(.35,'rgba(255,236,190,.22)');
+  sg.addColorStop(1,  'rgba(255,236,190,0)');
+  ctx.fillStyle = sg;
+  ctx.fillRect(sunX-210, sunY-210, 420, 420);
+  // drifting haze clouds — they fill the tall sky on a portrait phone
+  const skyTop = TOPY + 34;
+  const skyBot = Math.min(TOPY + skySpan*0.92, 330);      // stay above the rooftops
+  const span   = Math.max(120, skyBot - skyTop);
+  const nClouds = Math.round(clamp(span/170, 2, 5));
+  for (let k=0;k<nClouds;k++){
+    const cx = ((k*520 + G.t*6) % (VW + 560)) - 280;
+    const cy = skyTop + hash(k+2)*span;
+    const r  = 80 + hash(k+5)*120;
+    const cg = ctx.createRadialGradient(cx, cy, 2, cx, cy, r);
+    cg.addColorStop(0, 'rgba(255,255,255,.34)');
+    cg.addColorStop(.6, 'rgba(255,255,255,.14)');
+    cg.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = cg;
+    ctx.fillRect(cx-r, cy-r, r*2, r*2);
+  }
+  // kites over the rooftops
+  const nKites = Math.round(clamp(span/120, 4, 8));
+  for (let k=0;k<nKites;k++){
+    const kx = ((k*392 + G.t*13) % (VW + 260)) - 130;
+    const ky = skyTop + (nKites>1 ? k/(nKites-1) : .5)*span + Math.sin(G.t*.85 + k*2)*14;
+    drawKite(kx, ky, .8 + (k%3)*.22, G.t*.7 + k);
+  }
+  // pigeons
+  ctx.strokeStyle = 'rgba(38,46,56,.45)'; ctx.lineWidth = 2;
+  const nBirds = Math.round(clamp(span/55, 8, 20));
+  for (let k=0;k<nBirds;k++){
+    const px = ((k*176 + G.t*30) % (VW + 200)) - 100;
+    const py = skyTop + 24 + ((k%5)/4)*Math.max(40, span-70) + Math.sin(G.t*2.1 + k)*7;
+    const flap = Math.sin(G.t*9 + k)*3.4;
+    ctx.beginPath();
+    ctx.moveTo(px-6, py+flap); ctx.lineTo(px, py); ctx.lineTo(px+6, py+flap);
+    ctx.stroke();
+  }
+}
+
+function drawFar(cam){
+  const scene = route().scene;
+  const off = cam*0.13, slot = 240, base = 548;
+  const i0 = Math.floor(off/slot)-1, i1 = Math.ceil((off+VW)/slot)+1;
+  const farA = 'rgba(86,110,134,.74)', farB = 'rgba(64,88,112,.86)';
+  for (let i=i0; i<=i1; i++){
+    const x = i*slot - off;
+    const h1 = 56 + hash(i)*126, w1 = 118 + hash(i+9)*84;
+    ctx.fillStyle = farA;
+    ctx.fillRect(x+12, base-h1, w1, h1+40);
+
+    if (scene === 'okhla'){
+      if (hash(i+31) > .58){                       // neighbourhood mosque
+        ctx.fillStyle = farB;
+        ctx.fillRect(x+42, base-104, 92, 104);
+        ctx.beginPath(); ctx.arc(x+88, base-104, 29, Math.PI, 0); ctx.fill();
+        minaret(x+38, base, 128, farB); minaret(x+138, base, 128, farB);
+      } else if (hash(i+17) > .82){
+        archGate(x+40, base, 112, farB);            // campus gate
+      }
+    } else if (scene === 'ring'){
+      ctx.fillStyle = 'rgba(72,80,92,.82)';         // flyover deck
+      const deckY = base-124;
+      ctx.fillRect(x-60, deckY, slot+120, 16);
+      ctx.fillRect(x-60, deckY-13, slot+120, 6);
+      ctx.fillStyle = 'rgba(64,72,82,.88)';
+      for (let px = x-40; px < x+slot; px += 98) ctx.fillRect(px, deckY+16, 24, 124);
+      if (hash(i+5) > .5) metroTrain(x+26, deckY-32, 168, 'rgba(126,146,178,.8)');
+      if (hash(i+23) > .7) propBus(x+40, base+30, .8);
+    } else if (scene === 'ito'){
+      if (hash(i+7) > .42) landmarkRedFort(x+14, base, 200, 'rgba(126,72,58,.85)');
+      else { minaret(x+56, base, 168, farB); minaret(x+96, base, 150, farB);
+             ctx.fillStyle = farB; ctx.fillRect(x+30, base-84, 96, 84); }
+      if (hash(i+21) > .74) waterTank(x+150, base-118, 17, farB);
+    } else if (scene === 'cp'){
+      if (hash(i+11) > .46) landmarkIndiaGate(x+120, base, 1, farB);
+      else if (hash(i+13) > .3) landmarkDomeBlock(x+26, base, 178, 124, farB);
+      else if (hash(i+19) > .6) landmarkQutub(x+120, base, 210, farB);
+    } else {                                        // 'goal' - approaching Jantar Mantar
+      if (hash(i+11) > .3) landmarkIndiaGate(x+118, base, 1.05, farB);
+      else landmarkDomeBlock(x+18, base, 206, 134, farB);
+    }
+  }
+}
+
+function drawMid(cam){
+  const r = route(), scene = r.scene;
+  const off = cam*0.42, slot = 300, base = 583;
+  const i0 = Math.floor(off/slot)-1, i1 = Math.ceil((off+VW)/slot)+1;
+  for (let i=i0; i<=i1; i++){
+    const x = i*slot - off;
+    const k = hash(i+5);
+
+    if (scene === 'cp' && k < .5){
+      landmarkColonnade(x, base, slot-46, 100, '#7a828e');             // C.P. arcade
+    } else if (scene === 'ito' && k < .46){
+      const h = 74 + hash(i+2)*46;                                    // old-city shops
+      ctx.fillStyle = '#7d6c60';
+      ctx.fillRect(x, base-h, slot-30, h+16);
+      for (let s=0;s<5;s++){
+        const ax = x + 14 + s*58;
+        ctx.fillStyle = ['#c4644a','#4a7a8a','#b8964a','#6a7a5a','#9a6a7a'][s%5];
+        ctx.beginPath();
+        ctx.moveTo(ax, base-h+8); ctx.lineTo(ax+46, base-h+8);
+        ctx.lineTo(ax+46, base-h+30); ctx.lineTo(ax, base-h+30);
+        ctx.closePath(); ctx.fill();
+        ctx.fillStyle = 'rgba(20,24,28,.55)';
+        ctx.fillRect(ax+6, base-h+34, 34, 26);
+      }
+      ctx.strokeStyle = 'rgba(20,24,28,.5)'; ctx.lineWidth = 2;        // tangled wires
+      ctx.beginPath();
+      ctx.moveTo(x, base-h-16); ctx.quadraticCurveTo(x+slot/2, base-h+2, x+slot-30, base-h-16);
+      ctx.stroke();
+      ctx.fillStyle = '#3b3630';
+      for (let s=0;s<3;s++) ctx.fillRect(x+40+s*80, base-h-8, 14, 16);
+    } else if (k < .5){
+      const h = 92 + hash(i+2)*122, w = 168 + hash(i+7)*80;
+      ctx.fillStyle = scene === 'ito' ? '#6d6259' : '#5f6b7a';
+      ctx.fillRect(x, base-h, w, h+22);
+      ctx.fillStyle = 'rgba(20,26,32,.28)';
+      ctx.fillRect(x, base-h, w, 6);
+      windowsRect(x, base-h, w, h+18, .20);
+    } else if (k < .78){
+      const h = 54 + hash(i+3)*36;                                    // poster wall
+      ctx.fillStyle = '#737a84';
+      ctx.fillRect(x, base-h, slot-40, h+16);
+      for (let p=0;p<4;p++){
+        const px = x + 16 + p*52;
+        ctx.fillStyle = ['#e2d7bd','#d9c9a6','#cfd6dd'][p%3];
+        ctx.fillRect(px, base-h+10, 40, 30);
+        ctx.fillStyle = 'rgba(70,60,50,.4)';
+        ctx.fillRect(px+6, base-h+18, 28, 3);
+        ctx.fillRect(px+6, base-h+26, 20, 3);
+      }
+      ctx.fillStyle = 'rgba(20,26,32,.25)'; ctx.fillRect(x, base-h, slot-40, 5);
+    } else if (k < .9){
+      for (let t2=0;t2<2;t2++){                                       // trees
+        const tx = x + 60 + t2*130, th = 52 + hash(i*3+t2)*34;
+        ctx.fillStyle = '#3f5238';
+        ctx.fillRect(tx-4, base-th*.4, 8, th*.5+16);
+        ctx.fillStyle = '#465c3d';
+        circle(tx, base-th*.62, th*.45); ctx.fill();
+        ctx.fillStyle = 'rgba(150,180,125,.28)';
+        circle(tx-8, base-th*.72, th*.26); ctx.fill();
+      }
+    } else {
+      const h = 40 + hash(i+4)*18;                                    // low boundary wall + billboard
+      ctx.fillStyle = '#8a8f98';
+      ctx.fillRect(x, base-h, slot-40, h+16);
+      ctx.fillStyle = 'rgba(30,36,44,.35)';
+      for (let s=0;s<slot-60;s+=34) ctx.fillRect(x+8+s, base-h+8, 22, h-6);
+      if (hash(i+23) > .5){
+        ctx.fillStyle = '#2f3944';
+        ctx.fillRect(x+40, base-h-58, 4, 58);
+        ctx.fillRect(x+slot-120, base-h-58, 4, 58);
+        ctx.fillStyle = ['#b8543f','#3f6b7a','#8a6a3e'][i%3];
+        ctx.fillRect(x+34, base-h-70, slot-150, 56);
+        ctx.fillStyle = 'rgba(255,255,255,.5)';
+        ctx.font = '700 13px Segoe UI, Arial';
+        ctx.fillText(['CHALO DELHI','AZADI','HALLA BOL','JAI HIND'][Math.abs(i)%4], x+48, base-h-38);
+      }
+    }
+
+    // ---- Delhi street furniture ----
+    if (hash(i+29) > .78)
+      propSign(x + 34, base - 172, ['ITO CROSSING','BARAKHAMBA ROAD','PATEL CHOWK','JANTAR MANTAR','DELHI METRO'][i & 4 ? (i%5) : 4]);
+    if (hash(i+37) > .86) propChaiStall(x + 150, base);
+    if (hash(i+43) > .88) propAuto(x + 196, base, .9);
+    if (hash(i+53) > .91) propDog(x + 92, base);
+    if (scene === 'ring' && hash(i+61) > .84) propBus(x + 60, base + 6, .7);
+    if (scene === 'cp' && hash(i+67) > .88) propCycleRickshaw(x + 140, base, .9);
+    if (scene === 'ito' && hash(i+71) > .9) propVan(x + 40, base + 2, .62, false);
+    if (scene === 'cp' && hash(i+73) > .82){                        // metro entrance
+      ctx.fillStyle = '#4a515c';
+      ctx.fillRect(x+206, base-70, 74, 70);
+      ctx.fillStyle = '#0f7b4f';
+      ctx.fillRect(x+200, base-84, 86, 16);
+      ctx.fillStyle = '#fff';
+      ctx.font = '800 12px Segoe UI, Arial';
+      ctx.fillText('METRO', x+220, base-72);
+      ctx.fillStyle = 'rgba(20,26,32,.6)';
+      ctx.fillRect(x+224, base-54, 38, 54);
+    }
+    // street lamp
+    if (hash(i+17) > .5){
+      ctx.fillStyle = '#2f3944';
+      ctx.fillRect(x+18, base-122, 6, 122);
+      ctx.fillRect(x+18, base-124, 34, 6);
+      ctx.fillStyle = 'rgba(255,230,170,.5)';
+      circle(x+50, base-118, 7); ctx.fill();
+    }
+  }
+  // horizon haze, so the layers sit together
+  const hz = ctx.createLinearGradient(0, 415, 0, base);
+  hz.addColorStop(0, 'rgba(216,226,234,0)');
+  hz.addColorStop(1, 'rgba(216,226,234,.20)');
+  ctx.fillStyle = hz;
+  ctx.fillRect(0, 415, VW, base-415);
+}
+
+// little walking onlookers / waiting crowd on the pavement
+function drawPavementCrowd(cam){
+  const off = cam*0.86, slot = 104, base = 596;
+  const i0 = Math.floor(off/slot) - 2, i1 = Math.ceil((off+VW)/slot) + 1;
+  for (let i=i0; i<=i1; i++){
+    if (hash(i+41) < .35) continue;
+    const x = i*slot - off;
+    const n = 1 + Math.floor(hash(i+13)*3);
+    for (let k=0;k<n;k++){
+      const bx = x + k*16 + hash(i*7+k)*10;
+      const h = 30 + hash(i*11+k)*12;
+      const sway = Math.sin(G.t*2 + i + k)*2;
+      ctx.globalAlpha = .68;
+      ctx.fillStyle = ['#5a6270','#4d5563','#666e7c'][(i+k)%3];
+      ctx.fillRect(bx, base-h-12, 8, 12);
+      circle(bx+4+sway*.4, base-h-15, 5); ctx.fill();
+      if (hash(i*13+k) > .6){                       // placard
+        ctx.strokeStyle = '#6b7280'; ctx.lineWidth = 1.6;
+        ctx.beginPath(); ctx.moveTo(bx+8, base-h-14); ctx.lineTo(bx+13, base-h-32); ctx.stroke();
+        ctx.fillStyle = ['#e8ddc4','#d8ccb2'][k%2];
+        ctx.fillRect(bx+8, base-h-44, 16, 13);
+      }
+      ctx.globalAlpha = 1;
+    }
+  }
+}
+
+function drawRoad(cam){
+  const r = route();
+  // pavement + the red/white kerb paint Delhi is known for
+  ctx.fillStyle = '#6f7681';
+  ctx.fillRect(0, GROUND_Y-12, VW, 14);
+  const kOff = cam % 64;
+  for (let x = -kOff; x < VW + 64; x += 32){
+    const world = x + cam;
+    ctx.fillStyle = (Math.floor(world/32) % 2) ? '#c8402f' : '#ece7de';
+    ctx.fillRect(x, GROUND_Y-12, 32, 6);
+  }
+  ctx.fillStyle = 'rgba(40,45,52,.5)';
+  ctx.fillRect(0, GROUND_Y-6, VW, 2);
+  // asphalt
+  const g = ctx.createLinearGradient(0, GROUND_Y, 0, VH);
+  g.addColorStop(0, r.road); g.addColorStop(1, r.roadFar);
+  ctx.fillStyle = g;
+  ctx.fillRect(0, GROUND_Y-4, VW, VH-GROUND_Y+4);
+  // patchwork / cracks
+  const off = cam, slot = 260;
+  const i0 = Math.floor(off/slot)-1, i1 = Math.ceil((off+VW)/slot)+1;
+  for (let i=i0;i<=i1;i++){
+    const x = i*slot - off;
+    ctx.fillStyle = 'rgba(255,255,255,.030)';
+    ctx.fillRect(x + hash(i)*90, GROUND_Y+18 + hash(i+3)*70, 70 + hash(i+5)*120, 4);
+    ctx.strokeStyle = 'rgba(0,0,0,.18)'; ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x+30, GROUND_Y+30);
+    ctx.lineTo(x+52+hash(i)*30, GROUND_Y+54);
+    ctx.lineTo(x+40, GROUND_Y+80);
+    ctx.stroke();
+  }
+  // dashed centre line
+  ctx.fillStyle = 'rgba(230,235,240,.34)';
+  const dOff = cam % 150;
+  for (let x = -dOff; x < VW+150; x += 150) ctx.fillRect(x, GROUND_Y+76, 78, 7);
+  // drain channel
+  ctx.fillStyle = '#191d22';
+  ctx.fillRect(0, VH-16, VW, 16);
+  ctx.fillStyle = 'rgba(255,255,255,.05)';
+  for (let x = -(cam%40); x < VW; x += 40) ctx.fillRect(x, VH-16, 18, 16);
+}
+
+function drawBarricade(o, x, y){
+  const w = o.w, h = o.h;
+  // legs
+  ctx.fillStyle = '#8a9099';
+  ctx.fillRect(x+4, y+h-6, 5, 8);
+  ctx.fillRect(x+w-9, y+h-6, 5, 8);
+  // striped plank
+  for (let k=0;k<Math.ceil(w/14);k++){
+    ctx.fillStyle = (k%2) ? '#f2f4f6' : '#ff8b2e';
+    ctx.fillRect(x + k*14, y+h-26, Math.min(14, w-k*14), 14);
+  }
+  ctx.strokeStyle = 'rgba(0,0,0,.30)'; ctx.lineWidth = 1;
+  ctx.strokeRect(x+.5, y+h-26.5, w-1, 14);
+  // top rail
+  ctx.fillStyle = '#d8dde3';
+  ctx.fillRect(x, y, w, 6);
+  ctx.fillStyle = 'rgba(255,255,255,.5)';
+  ctx.fillRect(x, y, w, 2);
+  // Delhi Police plate
+  if (w >= 44){
+    ctx.fillStyle = '#12356b';
+    rr(x + w/2 - 21, y + 7, 42, 11, 2); ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.font = '700 7.5px Segoe UI, Arial';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('DELHI POLICE', x + w/2, y + 12.8);
+    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  }
+  // hazard light
+  ctx.globalAlpha = .55 + .35*Math.sin(G.t*6 + o.wob);
+  ctx.fillStyle = '#3aa0ff';
+  circle(x+w/2, y-6, 4.5); ctx.fill();
+  ctx.globalAlpha = 1;
+}
+function drawPothole(o, x, y){
+  const w = o.w;
+  ctx.fillStyle = '#141619';
+  ctx.beginPath();
+  ctx.ellipse(x+w/2, y+14, w/2, 15, 0, 0, Math.PI*2);
+  ctx.fill();
+  ctx.fillStyle = '#0c0e11';
+  ctx.beginPath();
+  ctx.ellipse(x+w/2, y+15, w/2-7, 10, 0, 0, Math.PI*2);
+  ctx.fill();
+  // water sheen
+  ctx.globalAlpha = .28;
+  ctx.fillStyle = '#93b6cf';
+  ctx.beginPath();
+  ctx.ellipse(x+w/2-8, y+16, w/4, 4.5, 0, 0, Math.PI*2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+  // jagged rim
+  ctx.strokeStyle = 'rgba(120,126,134,.55)'; ctx.lineWidth = 2;
+  ctx.beginPath();
+  for (let k=0;k<10;k++){
+    const a = Math.PI + (k/9)*Math.PI;
+    const px = x+w/2 + Math.cos(a)*(w/2), py = y+14 + Math.sin(a)*15;
+    k ? ctx.lineTo(px,py) : ctx.moveTo(px,py);
+  }
+  ctx.stroke();
+}
+function drawPolice(o, x, y){
+  const h = o.h, cx = x + o.w/2;
+  const sw = o.walking ? Math.sin(o.t*10)*3 : Math.sin(o.t*2)*1.2;
+  // shadow
+  ctx.globalAlpha = .3; ctx.fillStyle = '#000';
+  ctx.beginPath(); ctx.ellipse(cx, GROUND_Y-2, 20, 5, 0,0,Math.PI*2); ctx.fill();
+  ctx.globalAlpha = 1;
+  // legs
+  ctx.fillStyle = '#2c2f36';
+  ctx.fillRect(cx-11+sw, y+h-26, 9, 26);
+  ctx.fillRect(cx+2-sw,  y+h-26, 9, 26);
+  // khaki shirt
+  ctx.fillStyle = '#b39a63';
+  rr(cx-14, y+h-56, 28, 32, 5); ctx.fill();
+  ctx.fillStyle = 'rgba(0,0,0,.22)';
+  ctx.fillRect(cx-2, y+h-56, 4, 32);
+  // belt
+  ctx.fillStyle = '#4a3c28';
+  ctx.fillRect(cx-14, y+h-30, 28, 5);
+  // arms: one raised with lathi
+  ctx.strokeStyle = '#b39a63'; ctx.lineWidth = 7; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(cx-10, y+h-50); ctx.lineTo(cx-20, y+h-34+sw); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx+10, y+h-50); ctx.lineTo(cx+22, y+h-66-sw); ctx.stroke();
+  // lathi
+  ctx.strokeStyle = '#6d4b23'; ctx.lineWidth = 4;
+  ctx.beginPath(); ctx.moveTo(cx+22, y+h-70-sw); ctx.lineTo(cx+34, y+h-96-sw); ctx.stroke();
+  // head + cap
+  ctx.fillStyle = '#a9805a';
+  circle(cx, y+h-64, 9); ctx.fill();
+  ctx.fillStyle = '#3b3a34';
+  ctx.beginPath(); ctx.arc(cx, y+h-66, 10, Math.PI, 0); ctx.fill();
+  ctx.fillRect(cx-11, y+h-68, 22, 5);
+  ctx.fillStyle = '#20222a';
+  ctx.fillRect(cx-9, y+h-70, 18, 3);
+  // stern brow
+  ctx.strokeStyle = 'rgba(40,25,15,.7)'; ctx.lineWidth = 1.6;
+  ctx.beginPath(); ctx.moveTo(cx-5, y+h-66); ctx.lineTo(cx-1, y+h-67); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx+1, y+h-67); ctx.lineTo(cx+5, y+h-66); ctx.stroke();
+}
+function drawGasCanister(o, x, y){
+  const w = o.w, h = o.h;
+  ctx.fillStyle = '#7d848d';
+  rr(x, y+6, w, h-6, 4); ctx.fill();
+  ctx.fillStyle = '#9aa1aa';
+  ctx.fillRect(x+2, y+6, 6, h-10);
+  ctx.fillStyle = '#5c636b';
+  ctx.fillRect(x+w/2-5, y, 10, 8);
+  // plume
+  for (let k=0;k<5;k++){
+    const t = (o.t*22 + k*13) % 34;
+    ctx.globalAlpha = .30*(1 - t/34);
+    ctx.fillStyle = k%2 ? '#c8d3a6' : '#aebd90';
+    circle(x+w/2 + Math.sin(o.t*3+k)*7, y - 4 - t, 9 + t*0.35); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+function drawGasCloud(o, x, y){
+  for (let k=0;k<9;k++){
+    const px = x + (k/8)*o.w + Math.sin(o.t*2.2 + k)*6;
+    const py = y + o.h/2 + Math.sin(o.t*1.7 + k*1.3)*8;
+    ctx.globalAlpha = .28 + .12*Math.sin(o.t*3 + k);
+    ctx.fillStyle = k%3===0 ? '#e5ecc0' : (k%3===1 ? '#c3d1a2' : '#a8ba8a');
+    circle(px, py, 17 + (k%3)*5); ctx.fill();
+  }
+  ctx.globalAlpha = .18;
+  ctx.fillStyle = '#eef4d0';
+  rr(x-4, y-4, o.w+8, o.h+8, 18); ctx.fill();
+  ctx.globalAlpha = .34;
+  ctx.strokeStyle = '#7d8f5e'; ctx.lineWidth = 2;
+  rr(x-3, y-3, o.w+6, o.h+6, 17); ctx.stroke();
+  ctx.globalAlpha = 1;
+}
+function drawCrowdItem(it, x, y){
+  const bob = Math.sin(it.t*4)*4;
+  ctx.globalAlpha = .35; ctx.fillStyle = '#000';
+  ctx.beginPath(); ctx.ellipse(x+16, y+it.h+2, 12, 3.5, 0,0,Math.PI*2); ctx.fill();
+  ctx.globalAlpha = 1;
+  // glow
+  ctx.globalAlpha = .30 + .18*Math.sin(it.t*6);
+  ctx.fillStyle = '#8effb0';
+  circle(x+16, y+24+bob, 26); ctx.fill();
+  ctx.globalAlpha = 1;
+  drawProtestor(x+16, y+it.h+bob, hash(it.x)*100, 1, true);
+}
+function drawAidItem(it, x, y){
+  const bob = Math.sin(it.t*4)*4;
+  ctx.globalAlpha = .32; ctx.fillStyle = '#9fe8ff';
+  circle(x+15, y+21+bob, 24); ctx.fill();
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = '#dff6ff';
+  rr(x+6, y+6+bob, 18, 32, 5); ctx.fill();
+  ctx.fillStyle = '#2f9ed6';
+  ctx.fillRect(x+6, y+20+bob, 18, 7);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(x+13, y+12+bob, 4, 16);
+  rr(x+8, y+2+bob, 14, 5, 2); ctx.fill();
+}
+
+// generic protestor figure: x = centre, y = feet
+function drawProtestor(x, y, seed, s, hero){
+  s = s || 1;
+  const kurta = ['#f2f4f6','#e8eef4','#f6e9cd'][Math.floor(seed)%3];
+  const skin  = ['#c08a5e','#a9744c','#d9a271'][Math.floor(seed*1.7)%3];
+  const swing = hero ? Math.sin(player.anim)*1.0 : Math.sin(G.t*7 + seed)*.5;
+  const legs  = hero ? 9 : 7;
+  // shadow
+  ctx.globalAlpha = .25; ctx.fillStyle = '#000';
+  ctx.beginPath(); ctx.ellipse(x, y-1, 14*s, 4*s, 0,0,Math.PI*2); ctx.fill();
+  ctx.globalAlpha = 1;
+  // legs
+  ctx.strokeStyle = '#3a3f47'; ctx.lineWidth = 6*s; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(x-4*s, y-22*s); ctx.lineTo(x-4*s - swing*4, y); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x+4*s, y-22*s); ctx.lineTo(x+4*s + swing*4, y); ctx.stroke();
+  // torso (kurta)
+  ctx.fillStyle = kurta;
+  rr(x-11*s, y-46*s, 22*s, 26*s, 5*s); ctx.fill();
+  ctx.fillStyle = 'rgba(0,0,0,.08)';
+  ctx.fillRect(x-11*s, y-30*s, 22*s, 3*s);
+  // arms: right arm raised with placard
+  ctx.strokeStyle = kurta; ctx.lineWidth = 6*s;
+  ctx.beginPath(); ctx.moveTo(x+8*s, y-42*s); ctx.lineTo(x+15*s, y-58*s - swing*2); ctx.stroke();
+  ctx.strokeStyle = skin; ctx.lineWidth = 5*s;
+  ctx.beginPath(); ctx.moveTo(x-8*s, y-42*s); ctx.lineTo(x-15*s, y-24*s + swing*3); ctx.stroke();
+  // placard
+  const px = x+15*s, py = y-84*s - swing*2;
+  ctx.strokeStyle = '#8a6a44'; ctx.lineWidth = 2.4*s;
+  ctx.beginPath(); ctx.moveTo(px, y-58*s); ctx.lineTo(px, py+16*s); ctx.stroke();
+  ctx.fillStyle = '#f7f3e8';
+  ctx.save(); ctx.translate(px, py+8*s); ctx.rotate(-.06 + swing*.05);
+  ctx.fillRect(-14*s, -9*s, 28*s, 18*s);
+  ctx.fillStyle = '#d8cdb4'; ctx.fillRect(-14*s, 5*s, 28*s, 4*s);
+  ctx.fillStyle = ['#e2523b','#2f8fd6','#2fae5a'][Math.floor(seed*2.3)%3];
+  ctx.fillRect(-9*s, -4*s, 18*s, 3.4*s);
+  ctx.fillRect(-6*s, 1.5*s, 12*s, 3.4*s);
+  ctx.restore();
+  // head
+  ctx.fillStyle = skin;
+  circle(x, y-54*s, 8*s); ctx.fill();
+  ctx.fillStyle = '#2b2b2b';
+  ctx.beginPath(); ctx.arc(x, y-57*s, 8.4*s, Math.PI, 0); ctx.fill();
+  ctx.fillStyle = '#c08a5e';
+  if (hero){
+    // headband for the player
+    ctx.fillStyle = '#ff9933';
+    ctx.fillRect(x-8.5*s, y-59*s, 17*s, 3.4*s);
+  }
+}
+
+function drawHero(){
+  const x = player.x - G.camX, y = player.y;
+  const blink = player.invuln > 0 && Math.floor(player.invuln*14)%2 === 0;
+  if (blink) ctx.globalAlpha = .38;
+  if (player.sliding){
+    // sliding pose: low, leaning forward
+    ctx.globalAlpha *= .25; ctx.fillStyle = '#000';
+    ctx.beginPath(); ctx.ellipse(x, y-1, 22, 4.5, 0,0,Math.PI*2); ctx.fill();
+    ctx.globalAlpha = blink ? .38 : 1;
+    ctx.strokeStyle = '#3a3f47'; ctx.lineWidth = 7; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(x-16, y-8); ctx.lineTo(x-22, y); ctx.stroke();
+    ctx.fillStyle = '#f2f4f6';
+    rr(x-18, y-36, 40, 24, 8); ctx.fill();
+    ctx.fillStyle = '#c08a5e';
+    ctx.beginPath(); ctx.moveTo(x+16, y-18); ctx.lineTo(x+30, y-24); ctx.lineTo(x+30, y-8); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#2b2b2b';
+    ctx.fillRect(x+14, y-40, 16, 7);
+    ctx.fillStyle = '#ff9933';
+    ctx.fillRect(x+13, y-41, 18, 3);
+    // dust trail
+    ctx.globalAlpha = blink ? .3 : .5;
+    ctx.fillStyle = '#a8adb6';
+    circle(x-26, y-6, 7); ctx.fill();
+    circle(x-38, y-3, 5); ctx.fill();
+    ctx.globalAlpha = 1;
+  } else {
+    drawProtestor(x, y, 3.3, 1, true);
+  }
+  // tear gas tears
+  if (player.gasT > 0){
+    ctx.globalAlpha = .75;
+    ctx.fillStyle = '#bfe0ff';
+    circle(x+6, y-50, 2.6); ctx.fill();
+    circle(x+9.5, y-46, 2.0); ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+  ctx.globalAlpha = 1;
+}
+
+// ------------------------- drawing: goal --------------------------
+function drawGoal(){
+  const x = GOAL_X - G.camX;
+  // chalk finish line
+  ctx.fillStyle = 'rgba(255,255,255,.75)';
+  for (let k=0;k<6;k++) ctx.fillRect(x-3 + k*9, GROUND_Y, 5, 18);
+  // Jantar Mantar: the samrat yantra ramp + domes
+  const baseY = GROUND_Y;
+  ctx.fillStyle = '#8d7a5f';
+  ctx.beginPath();
+  ctx.moveTo(x-150, baseY);
+  ctx.lineTo(x-150, baseY-40);
+  ctx.lineTo(x-40, baseY-250);
+  ctx.lineTo(x-16, baseY-250);
+  ctx.lineTo(x-16, baseY);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle = 'rgba(0,0,0,.16)';
+  ctx.beginPath();
+  ctx.moveTo(x-40, baseY-250); ctx.lineTo(x-16, baseY-250); ctx.lineTo(x-16, baseY); ctx.lineTo(x-40, baseY);
+  ctx.closePath(); ctx.fill();
+  // steps on the ramp
+  ctx.strokeStyle = 'rgba(255,255,255,.28)'; ctx.lineWidth = 2;
+  for (let k=1;k<7;k++){
+    const t = k/7;
+    ctx.beginPath();
+    ctx.moveTo(lerp(x-150, x-40, t), lerp(baseY-40, baseY-250, t));
+    ctx.lineTo(lerp(x-150, x-40, t) + 40, lerp(baseY-40, baseY-250, t));
+    ctx.stroke();
+  }
+  // small dome structure
+  ctx.fillStyle = '#9a8668';
+  ctx.fillRect(x+4, baseY-96, 78, 96);
+  ctx.beginPath(); ctx.arc(x+43, baseY-96, 39, Math.PI, 0); ctx.fill();
+  ctx.fillStyle = 'rgba(0,0,0,.12)';
+  ctx.fillRect(x+4, baseY-40, 78, 40);
+  // gopuram-ish finial
+  ctx.fillStyle = '#c8a86a';
+  ctx.fillRect(x+38, baseY-150, 10, 22);
+  circle(x+43, baseY-154, 7); ctx.fill();
+  // tricolour flags along the plaza
+  const cols = ['#ff9933','#ffffff','#1a9e2f'];
+  for (let k=0;k<7;k++){
+    const fx = x - 210 + k*74, fh = 96 + Math.sin(G.t*2.4 + k)*6;
+    ctx.strokeStyle = '#3d434c'; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.moveTo(fx, baseY); ctx.lineTo(fx, baseY-fh); ctx.stroke();
+    ctx.fillStyle = cols[k%3];
+    ctx.beginPath();
+    ctx.moveTo(fx+2, baseY-fh);
+    ctx.quadraticCurveTo(fx+34, baseY-fh+6 + Math.sin(G.t*3+k)*4, fx+44, baseY-fh+16);
+    ctx.quadraticCurveTo(fx+30, baseY-fh+30, fx+2, baseY-fh+26);
+    ctx.closePath(); ctx.fill();
+  }
+  // finish banner
+  const bw = 430, bh = 62, by = 118;
+  ctx.fillStyle = 'rgba(10,14,18,.82)';
+  rr(x-bw/2, by, bw, bh, 12); ctx.fill();
+  ctx.strokeStyle = '#ff9933'; ctx.lineWidth = 3;
+  rr(x-bw/2, by, bw, bh, 12); ctx.stroke();
+  ctx.fillStyle = '#ff9933'; ctx.font = '900 34px Segoe UI, Arial';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('JANTAR MANTAR', x, by+bh/2+1);
+  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  // gathered happy crowd
+  for (let k=0;k<26;k++){
+    const hx = x - 250 + hash(k*3.7)*560;
+    drawProtestor(hx, baseY - 4 + hash(k)*6, k*7.1, .72, false);
+  }
+}
+
+// ------------------------- drawing: HUD ---------------------------
+// ------------------------- drawing: HUD (screen space) ------------
+// Drawn in CSS pixels, so the readouts stay crisp and readable whether the
+// screen is a 27" monitor or a phone held in one hand.
+function hudScale(){
+  const s = clamp(Math.min(CW/430, CH/620), .78, 1.25);
+  return CH < 470 ? s*0.86 : s;               // short landscape screens: keep it dainty
+}
+// shrink a line of text until it fits: phones are narrow
+function fitFont(txt, maxW, size, weight){
+  const fam = 'Segoe UI, Arial';
+  ctx.font = `${weight} ${Math.round(size)}px ${fam}`;
+  const w = ctx.measureText(txt).width;
+  let s = size;
+  if (w > maxW && w > 0) s = Math.max(9, size*maxW/w);
+  ctx.font = `${weight} ${Math.round(s)}px ${fam}`;
+  return s;
+}
+function drawHUD(){
+  const HS = hudScale();
+  const pad = Math.max(8, Math.min(24, CW*0.022));
+  const wide = CW >= 780;
+  const prog = clamp(player.x/GOAL_X, 0, 1);
+  const km = (GOAL_X - player.x)*METRES_PER_UNIT/1000;
+  const fsz = n => Math.round(n*HS);
+  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+
+  // ---------------- flags (lives) ----------------
+  const fw = 15*HS, fh = 11*HS, fgap = 6*HS;
+  const fy  = 32*HS;
+  ctx.font = `700 ${fsz(10)}px Segoe UI, Arial`;
+  ctx.fillStyle = 'rgba(255,255,255,.5)';
+  ctx.fillText('FLAGS', pad, fy - 17*HS);
+  const lost = G.lifeFlash > 0;
+  const pulse = lost ? 1 + .13*Math.abs(Math.sin(G.t*16)) : 1;
+  for (let i=0;i<MAX_LIVES;i++){
+    const bx = pad + i*(fw+fgap), by = fy - 12*HS;
+    const on = i < player.lives;
+    ctx.save();
+    if (on && lost){ ctx.translate(bx, by); ctx.scale(pulse, pulse); ctx.translate(-bx, -by); }
+    ctx.strokeStyle = on ? '#d5dbe2' : 'rgba(255,255,255,.22)';
+    ctx.lineWidth = 2.2*HS;
+    ctx.beginPath(); ctx.moveTo(bx, by+20*HS); ctx.lineTo(bx, by); ctx.stroke();
+    ctx.fillStyle = on ? (lost ? '#ff5a3c' : '#ff9933') : 'rgba(255,255,255,.13)';
+    ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx+fw*1.1, by+fh*0.5); ctx.lineTo(bx, by+fh); ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+
+  // ---------------- which Delhi street are we on ----------------
+  const rt = route();
+  ctx.font = `700 ${fsz(11)}px Segoe UI, Arial`;
+  const rw = ctx.measureText(rt.name).width + 22*HS;
+  const ry = fy + 8*HS;
+  ctx.fillStyle = 'rgba(10,14,19,.62)';
+  rr(pad, ry, rw, 22*HS, 6*HS); ctx.fill();
+  ctx.strokeStyle = 'rgba(255,215,154,.4)'; ctx.lineWidth = 1.3;
+  rr(pad, ry, rw, 22*HS, 6*HS); ctx.stroke();
+  ctx.fillStyle = '#ffd79a'; ctx.textBaseline = 'middle';
+  ctx.fillText(rt.name, pad + 11*HS, ry + 11.5*HS);
+  ctx.textBaseline = 'alphabetic';
+
+  // ---------------- score / protestors / streak / time ----------------
+  const scoreY = Math.max(56 + 14*HS, 48*HS);      // clear of the pause + mute buttons
+  const mult = 1 + Math.min(G.streak, STREAK_CAP)*STREAK_STEP;
+  ctx.textAlign = 'right';
+  ctx.fillStyle = '#fff';
+  ctx.font = `900 ${fsz(26)}px Segoe UI, Arial`;
+  ctx.fillText(String(Math.round(G.score)).padStart(5,'0'), CW - pad, scoreY);
+  ctx.font = `800 ${fsz(13)}px Segoe UI, Arial`;
+  ctx.fillStyle = '#8ff0a4';
+  ctx.fillText('PROTESTORS ' + G.crowd, CW - pad, scoreY + 18*HS);
+  ctx.font = `800 ${fsz(12)}px Segoe UI, Arial`;
+  ctx.fillStyle = G.streak > 0 ? '#ffd27a' : 'rgba(255,255,255,.32)';
+  ctx.fillText('STREAK x' + mult.toFixed(1), CW - pad, scoreY + 33*HS);
+  ctx.font = `700 ${fsz(11)}px Segoe UI, Arial`;
+  ctx.fillStyle = 'rgba(255,255,255,.45)';
+  ctx.fillText('TIME ' + G.t.toFixed(1) + 's', CW - pad, scoreY + 48*HS);
+
+  // ---------------- route map ----------------
+  const mh = (CH < 470 ? 48 : 58)*HS;
+  const mw = wide ? clamp(CW - 2*(178*HS) - 2*pad, 320, 660)
+                  : CW - 2*pad;
+  const my = wide ? 14 : Math.max(scoreY + 58*HS, 98*HS);
+  const mx = (CW - mw)/2;
+  ctx.fillStyle = 'rgba(10,14,19,.62)';
+  rr(mx, my, mw, mh, 12*HS); ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,.13)'; ctx.lineWidth = 1.4;
+  rr(mx, my, mw, mh, 12*HS); ctx.stroke();
+
+  const trackX0 = mx+22*HS, trackX1 = mx+mw-22*HS, trackY = my+mh-16*HS;
+  ctx.fillStyle = 'rgba(255,255,255,.16)';
+  rr(trackX0, trackY-3*HS, trackX1-trackX0, 6*HS, 3*HS); ctx.fill();
+  const g = ctx.createLinearGradient(trackX0, 0, trackX1, 0);
+  g.addColorStop(0,'#ff9933'); g.addColorStop(1,'#1a9e2f');
+  ctx.fillStyle = g;
+  rr(trackX0, trackY-3*HS, (trackX1-trackX0)*prog, 6*HS, 3*HS); ctx.fill();
+
+  // landmark dots + labels (staggered so they never collide)
+  const labelEvery = mw < 430 ? 2 : 1;
+  ctx.font = `700 ${fsz(9.5)}px Segoe UI, Arial`;
+  LANDMARKS.forEach((l, i) => {
+    const last = i === LANDMARKS.length-1;
+    const lx = lerp(trackX0, trackX1, l.p);
+    ctx.fillStyle = prog >= l.p ? '#ffd79a' : 'rgba(255,255,255,.35)';
+    circle(lx, trackY, (i===0||last ? 4.6 : 3.4)*HS); ctx.fill();
+    if (i % labelEvery !== 0 && !last) return;
+    ctx.textAlign = i === 0 ? 'left' : (last ? 'right' : 'center');
+    ctx.fillStyle = prog >= l.p ? '#ffe6c2' : 'rgba(255,255,255,.45)';
+    ctx.fillText(l.n, i === 0 ? lx-7*HS : (last ? lx+5*HS : lx), (i % 2 ? my+34*HS : my+19*HS));
+  });
+  ctx.textAlign = 'center';
+
+  // goal flag
+  const fpx = trackX1, fpy = trackY-7*HS;
+  ctx.strokeStyle = '#3d434c'; ctx.lineWidth = 2*HS;
+  ctx.beginPath(); ctx.moveTo(fpx, fpy+4*HS); ctx.lineTo(fpx, fpy-16*HS); ctx.stroke();
+  ctx.fillStyle = '#1a9e2f';
+  ctx.beginPath(); ctx.moveTo(fpx, fpy-16*HS); ctx.lineTo(fpx+12*HS, fpy-11*HS); ctx.lineTo(fpx, fpy-6*HS); ctx.closePath(); ctx.fill();
+  // player marker
+  const pmx = lerp(trackX0, trackX1, prog);
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.moveTo(pmx, trackY-11*HS); ctx.lineTo(pmx-5.5*HS, trackY-21*HS); ctx.lineTo(pmx+5.5*HS, trackY-21*HS);
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = 'rgba(0,0,0,.5)'; ctx.lineWidth = 1; ctx.stroke();
+
+  // distance readout
+  ctx.font = `700 ${fsz(12)}px Segoe UI, Arial`;
+  ctx.fillStyle = 'rgba(255,255,255,.82)';
+  ctx.fillText(km > 0 ? km.toFixed(2)+' km to Jantar Mantar' : 'JANTAR MANTAR!', CW/2, my+mh+16*HS);
+
+  // tear gas warning
+  if (player.gasT > 0){
+    ctx.font = `900 ${fsz(22)}px Segoe UI, Arial`;
+    ctx.globalAlpha = .55 + .45*Math.sin(G.t*10);
+    ctx.fillStyle = '#d7ff9c';
+    ctx.fillText('TEAR GAS!', CW/2, my+mh+44*HS);
+    ctx.globalAlpha = 1;
+  }
+  ctx.textAlign = 'left';
+}
+
+function drawEffects(){
+  for (const p of G.particles){
+    const a = clamp(p.life/p.max, 0, 1);
+    ctx.globalAlpha = a*.85;
+    ctx.fillStyle = p.col;
+    circle(p.x - G.camX, p.y, p.size*a + .6); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+
+// floating "+160" / "FLAG LOST" text, in world space
+function drawPops(){
+  if (!G.pops.length) return;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.font = '900 20px Segoe UI, Arial';
+  ctx.lineWidth = 4; ctx.lineJoin = 'round';
+  for (const p of G.pops){
+    const a = clamp(p.life/p.max, 0, 1);
+    const y = p.y - (1 - a)*20;
+    const x = p.x - G.camX;
+    ctx.globalAlpha = a;
+    ctx.strokeStyle = 'rgba(6,9,13,.85)';
+    ctx.strokeText(p.txt, x, y);
+    ctx.fillStyle = p.col;
+    ctx.fillText(p.txt, x, y);
+  }
+  ctx.globalAlpha = 1;
+  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+}
+
+function drawOverlayFx(){
+  // tear gas haze
+  if (player.gasT > 0 || G.gasFlash > 0){
+    const a = Math.max(player.gasT/2.8, G.gasFlash)*.55;
+    const g = ctx.createRadialGradient(VW/2, VH*0.5, VH*0.16, VW/2, VH*0.5, VH*0.85);
+    g.addColorStop(0, 'rgba(190,215,120,0)');
+    g.addColorStop(1, 'rgba(150,180,80,'+a.toFixed(3)+')');
+    ctx.fillStyle = g;
+    ctx.fillRect(-60, TOPY-80, VW+120, VH - TOPY + 200);
+    ctx.globalAlpha = a*.5;
+    ctx.fillStyle = '#e6f0c4';
+    for (let k=0;k<7;k++) circle(rand(0,VW), rand(TOPY,VH), rand(40,120)), ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+  // hit flash
+  if (G.flash > 0){
+    ctx.fillStyle = 'rgba('+G.flashCol+','+(G.flash*.6).toFixed(3)+')';
+    ctx.fillRect(-60, TOPY-80, VW+120, VH - TOPY + 200);
+  }
+  // vignette
+  const v = ctx.createRadialGradient(VW/2, VH*0.52, VH*0.34, VW/2, VH*0.52, VH*0.95);
+  v.addColorStop(0,'rgba(0,0,0,0)');
+  v.addColorStop(1,'rgba(0,0,0,.32)');
+  ctx.fillStyle = v;
+  ctx.fillRect(-60, TOPY-80, VW+120, VH - TOPY + 200);
+}
+
+// ------------------------- drawing: detention ---------------------
+// Police catch you: a van pulls in, you get bundled off, and the march
+// resumes on a different Delhi street a moment later.
+// World pass: the van itself, sitting on the road.
+function drawDetainedWorld(){
+  const t = G.detainT;
+  const px = player.x - G.camX, groundY = GROUND_Y;
+  const e = 1 - Math.pow(1 - clamp(t/0.95, 0, 1), 3);
+  const vanX = lerp(VW + 330, Math.max(30, px - 300), e);
+
+  // headlight wash in front of the van
+  if (t < 1.3){
+    ctx.globalAlpha = .22 * (1 - clamp(t/1.3,0,1));
+    ctx.fillStyle = '#ffe9b8';
+    circle(vanX - 50, groundY - 44, 58); ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+  propVan(vanX, groundY - 2, 1.02, true);
+
+  // skid dust
+  if (t < 1.15){
+    ctx.globalAlpha = .45 * (1 - t/1.15);
+    ctx.fillStyle = '#cfd4da';
+    for (let k=0;k<5;k++){ circle(vanX + 26 + k*24, groundY - rand(0,12), rand(6,17)); ctx.fill(); }
+    ctx.globalAlpha = 1;
+  }
+}
+
+// Screen pass: the darkening, the stamp and the "new route" card.
+function drawDetainedUI(){
+  const t = G.detainT;
+
+  // screen darkens
+  const dark = clamp((t - 1.1)/0.7, 0, 1) * .78;
+  if (dark > 0){
+    ctx.fillStyle = 'rgba(8,10,14,' + dark.toFixed(3) + ')';
+    ctx.fillRect(0, 0, CW, CH);
+  }
+
+  const HS = hudScale();
+  const fit = Math.min(1, (CW - 20)/472);      // keep the plate on screen when narrow
+
+  // DETAINED stamp — scales in, then fades as the van drives off
+  const stampA = clamp((t - 0.85)/0.25, 0, 1) * (1 - clamp((t - 1.95)/0.45, 0, 1));
+  if (stampA > .01){
+    const sIn  = clamp((t - 0.85)/0.32, 0, 1);
+    const anim = 1.5 - 0.5*(1 - Math.pow(1 - sIn, 3));
+    const scale = Math.min((CW - 16)/472, anim * HS * fit);   // never spill off screen
+    ctx.save();
+    ctx.translate(CW/2, CH*0.34);
+    ctx.rotate(-0.055 + Math.sin(t*9)*0.012);
+    ctx.scale(scale, scale);
+    ctx.globalAlpha = stampA;
+    ctx.fillStyle = 'rgba(14,16,22,.88)';
+    rr(-236, -54, 472, 108, 14); ctx.fill();
+    ctx.strokeStyle = '#e8412f'; ctx.lineWidth = 6;
+    rr(-236, -54, 472, 108, 14); ctx.stroke();
+    ctx.fillStyle = '#ff5642';
+    ctx.font = '900 60px Segoe UI, Arial';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('DETAINED', 0, -4);
+    ctx.fillStyle = 'rgba(255,255,255,.82)';
+    ctx.font = '700 15px Segoe UI, Arial';
+    ctx.fillText(route().short + '  ·  DELHI POLICE', 0, 32);
+    ctx.restore();
+    ctx.globalAlpha = 1;
+  }
+
+  // "...and off to another route"
+  if (t > 2.0){
+    const a = clamp((t - 2.0)/0.35, 0, 1);
+    ctx.globalAlpha = a;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    if (G.detainFinal){
+      ctx.fillStyle = 'rgba(255,255,255,.85)';
+      fitFont('No flags left — the march ends here…', CW-40, 20*HS, 700);
+      ctx.fillText('No flags left — the march ends here…', CW/2, CH*0.44);
+    } else {
+      ctx.fillStyle = 'rgba(255,255,255,.62)';
+      fitFont('Bundled into the van…', CW-40, 16*HS, 700);
+      ctx.fillText('Bundled into the van…', CW/2, CH*0.42);
+      const line = 'NEW ROUTE: ' + ROUTES[G.nextRoute].name;
+      ctx.fillStyle = '#ffd79a';
+      fitFont(line, CW-36, 30*HS, 900);
+      ctx.fillText(line, CW/2, CH*0.50);
+      ctx.fillStyle = 'rgba(255,255,255,.55)';
+      fitFont('dropped off on another street — keep marching', CW-30, 14*HS, 700);
+      ctx.fillText('dropped off on another street — keep marching', CW/2, CH*0.56);
+    }
+    ctx.globalAlpha = 1;
+  }
+  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+}
+
+function drawRouteBanner(){
+  const T = 3.6, rem = G.routeBanner;
+  const a = clamp(rem/0.9, 0, 1) * clamp((T-rem)/0.35, 0, 1);
+  const HS = hudScale();
+  const y = CH*0.30 - (1 - clamp((T-rem)/0.35, 0, 1))*26;
+  const w = Math.min(CW-24, 520*HS), h = 84*HS;
+  ctx.globalAlpha = a;
+  ctx.fillStyle = 'rgba(10,14,19,.78)';
+  rr(CW/2-w/2, y-h/2, w, h, 13*HS); ctx.fill();
+  ctx.strokeStyle = 'rgba(255,215,154,.5)'; ctx.lineWidth = 2;
+  rr(CW/2-w/2, y-h/2, w, h, 13*HS); ctx.stroke();
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  const kick = G.bannerKind === 'detain' ? 'OFF THE VAN, ON ANOTHER STREET' : 'NOW ENTERING';
+  ctx.fillStyle = 'rgba(255,255,255,.6)';
+  fitFont(kick, w-26, 13*HS, 700);
+  ctx.fillText(kick, CW/2, y-19*HS);
+  ctx.fillStyle = '#ffd79a';
+  fitFont(route().name, w-40, 28*HS, 900);
+  ctx.fillText(route().name, CW/2, y+15*HS);
+  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  ctx.globalAlpha = 1;
+}
+
+// ------------------------- render ---------------------------------
+function render(){
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.scale(ctx.__dpr, ctx.__dpr);
+  // shake
+  let shx = 0, shy = 0;
+  if (G.shakeT > 0){
+    const k = G.shakeT;
+    shx = (Math.random()-.5)*G.shakeMag*k*2.2;
+    shy = (Math.random()-.5)*G.shakeMag*k*1.4;
+  }
+  ctx.translate(0, OFFY + shy);
+  const gasWob = player.gasT > 0 ? Math.sin(G.t*13)*3.2*(player.gasT/2.8) : 0;
+  ctx.translate(shx + gasWob, 0);
+  ctx.scale(SCALE, SCALE);
+
+  drawSky();
+  const cam = G.camX;
+  drawFar(cam);
+  drawMid(cam);
+  drawPavementCrowd(cam);
+  drawRoad(cam);
+
+  // goal is behind everything on its plane
+  if (GOAL_X - cam < VW + 700 && GOAL_X - cam > -700) drawGoal();
+
+  // world entities
+  const sx = wx => wx - cam;
+
+  // gas clouds behind
+  for (const o of obstacles){
+    if (o.kind === 'gasAir') drawGasCloud(o, sx(o.x), o.bodyY);
+  }
+  for (const it of items) drawCrowdItem(it, sx(it.x), it.bodyY);
+
+  // shadow pass + bodies
+  for (const o of obstacles){
+    const x = sx(o.x);
+    if (x < -300 || x > VW+300) continue;
+    if (o.kind === 'barricade') drawBarricade(o, x, o.bodyY);
+    else if (o.kind === 'pothole') drawPothole(o, x, o.bodyY);
+    else if (o.kind === 'police') drawPolice(o, x, o.bodyY);
+    else if (o.kind === 'gasGround') drawGasCanister(o, x, o.bodyY);
+  }
+
+  // crowd trailing the player
+  const followers = Math.min(G.crowd, 14);
+  for (let i=followers; i>=1; i--){
+    const idx = i*7;
+    const t = player.trail[idx];
+    if (!t) continue;
+    const side = ((i%3)-1)*9;
+    const bob = Math.sin(G.t*8 + i)*1.6;
+    drawProtestor(sx(t.x) - i*6 + side, t.y + bob, i*2.7, .94, false);
+  }
+
+  drawHero();
+  drawEffects();
+  drawPops();
+  drawOverlayFx();
+  if (G.state === 'detained') drawDetainedWorld();
+
+  // ---------- UI pass: drawn in CSS pixels so it stays readable ----------
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.scale(ctx.__dpr, ctx.__dpr);
+  drawHUD();
+  if (G.state === 'detained') drawDetainedUI();
+  if (G.routeBanner > 0 && (G.state === 'playing' || G.state === 'detained')) drawRouteBanner();
+
+  // "GET READY" countdown flair at the very start
+  if (G.t < 1.1 && G.state === 'playing'){
+    const HS = hudScale();
+    ctx.globalAlpha = clamp(1.1 - G.t, 0, 1)*.9;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#fff';
+    ctx.font = `900 ${Math.round(44*HS)}px Segoe UI, Arial`;
+    ctx.fillText('GO!', CW/2, CH*0.42);
+    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+    ctx.globalAlpha = 1;
+  }
+}
+
+// ------------------------- main loop ------------------------------
+function tickParticles(dt, keepInView){
+  for (let i=G.particles.length-1;i>=0;i--){
+    const p = G.particles[i];
+    p.life -= dt;
+    if (p.life <= 0){ G.particles.splice(i,1); continue; }
+    p.vy += p.g*dt; p.x += p.vx*dt; p.y += p.vy*dt; p.vx *= (1 - 1.2*dt);
+    if (p.y > GROUND_Y){ p.y = GROUND_Y; p.vy *= -.28; p.vx *= .6; }
+  }
+}
+
+let last = performance.now();
+function frame(now){
+  let dt = (now - last)/1000;
+  last = now;
+  if (dt > 0.05) dt = 0.05;          // clamp long frames
+  Sound.music.tick();                // the march plays on its own clock
+  if (G.state === 'playing') update(dt);
+  else if (G.state === 'detained'){
+    // police van scene: world holds still, the cutscene runs
+    G.detainT += dt;
+    G.shakeT = Math.max(0, G.shakeT - dt);
+    G.flash  = Math.max(0, G.flash - dt*2.2);
+    tickParticles(dt);
+    if (G.detainT > 3.0) finishDetain();
+  }
+  else if (G.state === 'won'){
+    tickParticles(dt);
+    G.shakeT = Math.max(0, G.shakeT - dt);
+    if (Math.random() < dt*22)
+      puff(GOAL_X + rand(-260,420), GROUND_Y - 20, pick(['#ff9933','#ffffff','#1a9e2f','#ffd84d']),
+           rand(60,260), rand(.7,1.4), rand(3,6));
+  } else if (G.state === 'lost'){
+    G.shakeT = Math.max(0, G.shakeT - dt);
+    G.flash   = Math.max(0, G.flash - dt*2);
+    tickParticles(dt);
+  } else if (G.state === 'title'){
+    // idle demo: gently scroll the background
+    G.camX += dt*40;
+    G.t += dt;
+    if (Math.random() < dt*8)
+      puff(G.camX + rand(0,VW), GROUND_Y - rand(0,10), '#aeb3bb', 60, .4, rand(2,4));
+    tickParticles(dt);
+  }
+  render();
+  requestAnimationFrame(frame);
+}
+
+// ------------------------- debug hook -----------------------------
+// Handy for tinkering from the console: __cjm.G, __cjm.player, __cjm.startRun()
+window.__cjm = {
+  G, player, input, startRun, update, render, Sound, ROUTES,
+  detain, finishDetain, resize, routeWanted, sectionIndex, popText,
+  get VW(){ return VW; }, get VH(){ return VH; }, get SCALE(){ return SCALE; },
+  get TOPY(){ return TOPY; }, get OFFY(){ return OFFY; },
+  get CW(){ return CW; }, get CH(){ return CH; },
+  GROUND_Y, DESIGN_H, GOAL_X, MAX_LIVES, METRES_PER_UNIT,
+  get ctx(){ return ctx; },
+  get obstacles(){ return obstacles; },
+  get items(){ return items; },
+  get routeIndex(){ return routeIndex; },
+  set routeIndex(i){
+    const n = ROUTES.length;
+    routeIndex = ((i % n) + n) % n;
+    routeDetour = ((routeIndex - sectionIndex()) % n + n) % n;
+  },
+  get routeDetour(){ return routeDetour; },
+  spawnWave, addHaz, addItem,
+};
+
+// ------------------------- boot -----------------------------------
+function boot(){
+  resize();
+  resetLevel();
+  document.getElementById('titleBest').innerHTML =
+    G.best ? 'Best score: <b style="color:#ffd79a">' + G.best + '</b>' : 'No score yet, comrade. Go set one.';
+  showTitle();
+  requestAnimationFrame(frame);
+}
+boot();
+
+})();
+</script>
+</body>
+</html>
